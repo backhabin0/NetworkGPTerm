@@ -1,16 +1,17 @@
 #include "Session.h"
 #include "error.h"
 #include <mutex>
+#include <windows.h>
 
 std::array<Session, MAX_USER> g_players;
 
 int g_ClientNum;
 bool g_AllPlayerReady = false;
 CRITICAL_SECTION g_cs;
+std::mutex g_mutex;
 
 DWORD WINAPI ClientThread(LPVOID socket);
 DWORD WINAPI do_send(LPVOID);
-DWORD WINAPI ProcessPacket(LPVOID socket);
 ///////////////////////////////////////////////////////////
 int main()
 {
@@ -49,14 +50,9 @@ int main()
 				clientIndex = i;
 				break;
 			}
-			else {	//이미 접속해있으면 로그인값 아이디 -1로 설정
-				clientIndex = -1;
-				break;
-			}
 		}
 
 		addrlen = sizeof clientaddr;
-		g_players[clientIndex].SetSocketInfo();
 		g_players[clientIndex].SetSocket(accept(listen_socket, (struct sockaddr*)&clientaddr, &addrlen));
 		if (g_players[clientIndex].GetSocket() == INVALID_SOCKET) {
 			err_quit("accept()");
@@ -67,14 +63,22 @@ int main()
 		g_ClientNum++;
 		
 		hThread = CreateThread(NULL, 0, ClientThread, (LPVOID)g_players[clientIndex].GetSocketInfo(), 0, 0);
+		std::cout << g_players[clientIndex].GetSocketInfo() << std::endl;
 
 		if (hThread == NULL) {
+			std::cout << "closesocket()" << std::endl;
 			closesocket(g_players[clientIndex].GetSocket());
 		}
 		else {
+			std::cout << "closeHandle()" << std::endl;
 			CloseHandle(hThread);
 		}
 		if (g_ClientNum == 2) break;
+	}
+
+	while (true) {
+		std::cout << "모든 로그인이 완료됐어!!" << std::endl;
+		Sleep(50000);
 	}
 	DeleteCriticalSection(&g_cs);
 
@@ -82,34 +86,6 @@ int main()
 
 	WSACleanup();
 	return 0;
-}
-//클라이언트 스레드 - 접속한 클라 정보 가지고 있고, 데이터를 받아서 작업자 스레드에 넘김
-DWORD WINAPI ClientThread(LPVOID socket)
-{
-	int retval;
-	HANDLE sThread;
-	HANDLE rThread;
-
-	SocketInfo* socketinfo = reinterpret_cast<SocketInfo*>(socket);
-	
-
-	std::cout << "id:" << socketinfo->id << std::endl;
-
-	SOCKET client_socket = socketinfo->client_socket;
-
-	while (1) {
-		retval = recv(client_socket, socketinfo->buf, sizeof socketinfo->buf, 0);
-		std::cout << socketinfo->buf << std::endl;
-	
-		rThread = CreateThread(NULL, 0, ProcessPacket, (LPVOID)socket, 0, NULL);
-		if (rThread == NULL) { closesocket(client_socket); }
-		else { CloseHandle(rThread); }
-
-		sThread = CreateThread(NULL, 0, do_send, NULL, 0, NULL);
-		if (sThread == NULL) { closesocket(client_socket); }
-		else { CloseHandle(sThread); }
-	}
-
 }
 
 DWORD WINAPI do_send(LPVOID)
@@ -141,30 +117,44 @@ DWORD WINAPI do_send(LPVOID)
 	}
 }
 
-//클라로부터 받은 데이터 처리
-DWORD WINAPI ProcessPacket(LPVOID socket)
+DWORD WINAPI ClientThread(LPVOID socket)
 {
+	int retval;
+
 	SocketInfo* socketinfo = reinterpret_cast<SocketInfo*>(socket);
 	SOCKET client_socket = socketinfo->client_socket;
 
+	int len;
+	char buf[BUFSIZE];
+
 	while (true) {
-		char* p = reinterpret_cast<char*>(socketinfo->buf);
+		retval = recv(client_socket, (char*)(&len), sizeof(int), MSG_WAITALL);
+		retval = recv(client_socket, buf, len, MSG_WAITALL);
+		
+		char* p = reinterpret_cast<char*>(buf);
 		switch (p[0]) {
 		case CS_LOGIN: {
 			CS_LOGIN_PACKET* cspacket = reinterpret_cast<CS_LOGIN_PACKET*>(p);
 			g_players[socketinfo->id].SetName(cspacket->name);
 			g_players[socketinfo->id].SetOnline(true);
 
+			std::cout << "클라로부터 얻어온 아이디 : " << g_players[socketinfo->id].GetName() << std::endl;
 			//자신 포함 다른클라에게도 로그인했다고 보내기
 
 			SC_LOGIN_OK_PACKET* scpacket = new SC_LOGIN_OK_PACKET;
 			scpacket->type = SC_LOGIN_OK;
+			memcpy(scpacket->name, g_players[socketinfo->id].GetName(), sizeof(g_players[socketinfo->id].GetName()));
+			len = sizeof(SC_LOGIN_OK_PACKET);
 
-			for (int i = 0; i < MAX_USER; ++i) {
-				if (g_players[i].GetOnline()) {
-					EnterCriticalSection(&g_cs);
-					send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), sizeof(SC_LOGIN_OK_PACKET), 0);
-					LeaveCriticalSection(&g_cs);
+			{
+				std::lock_guard<std::mutex> lock(g_mutex);
+				for (int i = 0; i < MAX_USER; ++i) {
+					if (g_players[i].GetOnline()) {
+						/*EnterCriticalSection(&g_cs);*/
+						send(g_players[i].GetSocket(), reinterpret_cast<char*>(&len), sizeof(int), 0);
+						send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), len, 0);
+						/*LeaveCriticalSection(&g_cs);*/
+					}
 				}
 			}
 			delete scpacket;
@@ -175,20 +165,27 @@ DWORD WINAPI ProcessPacket(LPVOID socket)
 			g_players[socketinfo->id].SetReadyPlayer(true);
 
 			//자신 포함 다른클라에게도 레디했다고 보내기
-			SC_READY_PACKET* scpacket = new SC_READY_PACKET;
+			SC_READY_OK_PACKET* scpacket = new SC_READY_OK_PACKET;
 			scpacket->type = SC_READY_OK;
+			memcpy(scpacket->name, g_players[socketinfo->id].GetName(), sizeof(g_players[socketinfo->id].GetName()));
+			len = sizeof(SC_READY_OK_PACKET);
 
 			for (int i = 0; i < MAX_USER; ++i) {
 				if (g_players[i].GetOnline()) {
 					EnterCriticalSection(&g_cs);
-					send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), sizeof(SC_READY_PACKET), 0);
+					send(g_players[i].GetSocket(), (char*)&len, sizeof(int), 0);
+					send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), len, 0);
 					LeaveCriticalSection(&g_cs);
 				}
 			}
+			
 			delete scpacket;
 		}
 			break;
 		}
+		//버퍼,길이 초기화
+		memset(buf, 0, sizeof(buf));
+		len = 0;
 	}
 	return 0;
 }

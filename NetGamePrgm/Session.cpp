@@ -27,10 +27,6 @@ void Session::SetId(short id) { m_socketinfo->id = id; }
 
 void Session::SetY(float y) { m_y = y; }
 
-void Session::SetSocketInfo() {
-	memset(m_socketinfo, 0, BUFSIZE);
-	m_socketinfo->len = 0; 
-}
 
 void Session::SetHp(short hp) { m_hp = hp; }
 

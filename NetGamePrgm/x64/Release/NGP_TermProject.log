@@ -1,0 +1,8 @@
+﻿  ServerMain.cpp
+  Session.cpp
+  error.cpp
+  코드를 생성하고 있습니다.
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+  All 44 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  코드를 생성했습니다.
+  NGP_TermProject.vcxproj -> C:\Users\user\Desktop\넷겜플텀프\NGP_TermProject\NetworkGPTerm\NetGamePrgm\x64\Release\NGP_TermProject.exe

@@ -49,11 +49,13 @@ constexpr char SC_PLAYING_TIME = 10;
 
 struct CS_LOGIN_PACKET {
 	char type;
+	int id;
 	char name[NAME_SIZE];
 };
 
 struct CS_READY_PACKET {
 	char type;
+	char name[NAME_SIZE];
 };
 struct CS_MOVE_PAKCET {
 	char type;
@@ -81,10 +83,12 @@ struct SC_LOGIN_INFO_PACKET {
 
 struct SC_LOGIN_OK_PACKET {
 	char type;
+	char name[NAME_SIZE];
 };
 
-struct SC_READY_PACKET {
+struct SC_READY_OK_PACKET {
 	char type;
+	char name[NAME_SIZE];
 };
 struct SC_LOGINFAIL_PACKET {
 	char type;

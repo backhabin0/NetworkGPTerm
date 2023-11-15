@@ -11,8 +11,6 @@
 struct SocketInfo {
 	SOCKET client_socket;
 	short id;
-	int len;
-	char buf[BUFSIZE];
 };
 
 class Session {
@@ -34,7 +32,6 @@ public:
 	~Session();
 
 	void SetSocket(SOCKET socket);
-	void SetSocketInfo();
 	void SetId(short id);
 	void SetName(char* name);
 	void SetX(float x);

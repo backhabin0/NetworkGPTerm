@@ -1,0 +1,4 @@
+﻿  ServerMain.cpp
+C:\Users\user\Desktop\넷겜플텀프\NGP_TermProject\NetworkGPTerm\NetGamePrgm\ServerMain.cpp(89,9): warning C4101: 'sThread' :참조되지 않은 지역 변수입니다.
+C:\Users\user\Desktop\넷겜플텀프\NGP_TermProject\NetworkGPTerm\NetGamePrgm\ServerMain.cpp(88,6): warning C4101: 'retval' :참조되지 않은 지역 변수입니다.
+  NGP_TermProject.vcxproj -> C:\Users\user\Desktop\넷겜플텀프\NGP_TermProject\NetworkGPTerm\NetGamePrgm\x64\Debug\NGP_TermProject.exe
