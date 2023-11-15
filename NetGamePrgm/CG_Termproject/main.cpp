@@ -11,7 +11,7 @@ struct player{
 	float scalex = 3;
 }Player;
 CTexture* texture;
-CMesh* mesh;
+//CMesh* mesh;
 CShader* shader;
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
@@ -23,7 +23,7 @@ void Timer(int Value);
 void hpbar();
 void InitBuffer();
 GLint height, width; //윈도우창 크기 
-
+CMesh *mesh = new CMesh();
 
 
 //오브젝트 불러오기
@@ -135,7 +135,6 @@ float lastX, lastY;
 std::vector< glm::vec3 > sphere_vertices;
 std::vector< glm::vec2 > sphere_uvs;
 std::vector< glm::vec3 > sphere_normals;
-GLint sphere_object = mesh->loadOBJ("sphere.obj", sphere_vertices, sphere_uvs, sphere_normals);
 
 int k = 0; //포탄 넘버
 
@@ -154,7 +153,6 @@ glm::vec4 sphere_position; //포탄의 위치 (충돌처리용)
 std::vector< glm::vec3 > item_vertices[4];
 std::vector< glm::vec2 > item_uvs[4];
 std::vector< glm::vec3 > item_normals[4];
-GLint cube = mesh->loadOBJ("cube.obj", item_vertices[0], item_uvs[0], item_normals[0]);
 
 struct Heart {
 	bool exist = true;
@@ -222,6 +220,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 
 	//make shaders
 	shader = new CShader();
+	
 	shader->make_vertexShaders(); //--- 버텍스 세이더 만들기
 	shader->make_fragmentShaders(); //--- 프래그먼트 세이더 만들기
 	shader->make_shaderProgram(); //--- 세이더 프로그램 만들기
@@ -288,9 +287,12 @@ obj tank;
 obj map;
 GLint map_object = mesh->loadOBJ("cube.obj",map.out_vertices,map.out_uvs,map.out_normals);
 GLint tank_object = mesh->loadOBJ("try.obj", tank.out_vertices, tank.out_uvs, tank.out_normals);
-
-
+GLint cube = mesh->loadOBJ("cube.obj", item_vertices[0], item_uvs[0], item_normals[0]);
+GLint sphere_object = mesh->loadOBJ("sphere.obj", sphere_vertices, sphere_uvs, sphere_normals);
 GLvoid InitBuffer() {
+	sphere_normals;
+
+
 	glGenVertexArrays(1, &scene.VAO);
 	glGenBuffers(1, &scene.VBO_pos);
 	glGenBuffers(1, &scene.VBO_normal);
@@ -467,10 +469,10 @@ GLvoid drawObj() {
 	glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(head));
 	//head
 	glBindVertexArray(tank.VAO);
-	glDrawArrays(GL_TRIANGLES, 21000, tank_object);
+	//glDrawArrays(GL_TRIANGLES, 21000, tank_object);
 
 
-	glDrawArrays(GL_TRIANGLES, 0, tank_object);
+	//glDrawArrays(GL_TRIANGLES, 0, tank_object);
 
 	//-------------------------------------------------------------------------------------------------------------------------------
 	//맵

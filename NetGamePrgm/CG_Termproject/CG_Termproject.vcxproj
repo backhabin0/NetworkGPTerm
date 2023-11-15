@@ -159,6 +159,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NetworkMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CCamera.h" />
@@ -167,6 +168,8 @@
     <ClInclude Include="CPlayer.h" />
     <ClInclude Include="CShader.h" />
     <ClInclude Include="CTexture.h" />
+    <ClInclude Include="NetworkMgr.h" />
+    <ClInclude Include="protocol.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="std.h" />
   </ItemGroup>

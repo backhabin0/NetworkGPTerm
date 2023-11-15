@@ -31,6 +31,9 @@
     <Filter Include="소스 파일\CShader">
       <UniqueIdentifier>{e5a9c6e8-f368-4887-a3cb-2c800995bb8a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Socket">
+      <UniqueIdentifier>{9e23b3f4-8160-4f5a-a5b9-3efd2968fff2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertex.glsl">
@@ -68,6 +71,9 @@
     <ClCompile Include="CShader.cpp">
       <Filter>소스 파일\CShader</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkMgr.cpp">
+      <Filter>소스 파일\Socket</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="std.h">
@@ -93,6 +99,12 @@
     </ClInclude>
     <ClInclude Include="CShader.h">
       <Filter>소스 파일\CShader</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkMgr.h">
+      <Filter>소스 파일\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="protocol.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
