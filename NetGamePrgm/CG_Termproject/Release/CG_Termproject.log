@@ -1,0 +1,91 @@
+﻿  main.cpp
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(219,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(378,2): warning C4091: 'typedef ': 변수를 선언하지 않으면 'obj' 왼쪽은 무시됩니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(586,42): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(586,37): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(586,32): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(669,15): warning C4305: '인수': 'double'에서 'GLclampf'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(700,23): warning C4305: '-=': 'double'에서 'T'(으)로 잘립니다.
+          with
+          [
+              T=float
+          ]
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(701,19): warning C4305: '=': 'double'에서 'T'(으)로 잘립니다.
+          with
+          [
+              T=float
+          ]
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(807,13): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(814,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(815,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(818,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(819,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(822,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(823,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(825,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(826,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(830,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(831,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(834,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(835,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(838,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(839,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(841,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(842,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(889,63): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(889,47): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(889,31): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(889,15): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(888,100): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(888,79): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(888,58): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(888,37): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(925,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(925,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(925,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(925,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(924,87): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(924,69): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(924,51): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(924,33): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(940,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(940,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(940,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(940,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(939,87): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(939,69): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(939,51): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(939,33): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(944,13): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(955,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(955,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(955,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(955,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(954,79): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(954,63): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(954,47): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(954,31): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(977,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(978,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(984,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(985,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(991,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(992,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(998,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(999,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1017,11): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1018,11): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1024,10): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1025,10): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1066,28): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1067,28): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1071,24): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1072,24): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1149,22): warning C4244: '-=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\CG_Termproject\main.cpp(1150,22): warning C4244: '-=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  코드를 생성하고 있습니다.
+  2 of 472 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    8 functions had inline decision re-evaluated but remain unchanged
+  코드를 생성했습니다.
+  CG_Termproject.vcxproj -> C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\CG_Termproject_\Release\CG_Termproject.exe
