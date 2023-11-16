@@ -154,10 +154,6 @@
     <ClCompile Include="CPlayer.cpp" />
     <ClCompile Include="CShader.cpp" />
     <ClCompile Include="CTexture.cpp" />
-    <ClCompile Include="main - 복사본.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkMgr.cpp" />
   </ItemGroup>

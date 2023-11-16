@@ -1,6 +1,7 @@
 #include "std.h"
 #include "CMesh.h"
-
+#include "CShader.h"
+CShader *shader_ = new CShader;
 CMesh::CMesh()
 {
     m_vertices.clear();
@@ -123,7 +124,7 @@ GLint CMesh::loadOBJ(const char* path,
 
 
         out_vertices.push_back(temp);
-        //m_vertices.push_back(temp);
+        m_vertices.push_back(temp);
 
         //glm::vec3 vertex = temp_vertices[vertexIndex - 1];
         //outvertex.push_back(vertex);
@@ -135,14 +136,14 @@ GLint CMesh::loadOBJ(const char* path,
         unsigned int uvIndex = uvIndices[i];
         glm::vec2 vertex = temp_uvs[uvIndex - 1];
         out_uvs.push_back(vertex);
-        //m_uvs.push_back(vertex);
+        m_uvs.push_back(vertex);
 
     }
     for (unsigned int i = 0; i < normalIndices.size(); i++) {
         unsigned int normalIndex = normalIndices[i];
         glm::vec3 vertex = temp_normals[normalIndex - 1];
         out_normals.push_back(vertex);
-        //m_normals.push_back(vertex);
+        m_normals.push_back(vertex);
 
     }
 
@@ -157,13 +158,37 @@ void CMesh::loadmesh()
 
     glGenBuffers(1, &VBO_pos);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_pos);
-    glBufferData((GL_ARRAY_BUFFER), m_vertices.size() * sizeof(glm::vec3), &m_vertices, GL_STATIC_DRAW);
+    glBufferData((GL_ARRAY_BUFFER), m_vertices.size() * sizeof(glm::vec3), &m_vertices.front(), GL_STATIC_DRAW);
+    //GLint pAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aPos");
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
     glEnableVertexAttribArray(0);
 
     glGenBuffers(1, &VBO_normal);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_normal);
-    glBufferData(GL_ARRAY_BUFFER, m_normals.size() * sizeof(glm::vec3), &m_normals, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,m_normals.size() * sizeof(glm::vec3), &m_normals.front(), GL_STATIC_DRAW);
+    //GLint nAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aNormal");
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
     glEnableVertexAttribArray(1);
+
+    glGenBuffers(1, &VBO_uv);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_uv);
+    glBufferData(GL_ARRAY_BUFFER, m_uvs.size() * sizeof(glm::vec2), &m_uvs.front(), GL_STATIC_DRAW);
+    //GLint cAttribute9 = glGetAttribLocation(shader->Get_shaderProgram(), "aTexCoord");
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+    glEnableVertexAttribArray(2);
+}
+
+void CMesh::render()
+{
+    int modeltrans = glGetUniformLocation(shader_->Get_shaderProgram(), "modeltrans");
+    unsigned int objColorLocation = glGetUniformLocation(shader_->Get_shaderProgram(), "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+
+    unsigned int modelLocation = glGetUniformLocation(shader_->Get_shaderProgram(), "modeltrans");
+    glm::mat4 hearts = glm::mat4(1.0);
+    hearts = glm::translate(hearts, glm::vec3(0.0f,0.0f,0.0f));
+    hearts = glm::scale(hearts, glm::vec3(0.2, 0.2, 0.2));
+    glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(hearts));
+    glBindVertexArray(VAO);
+    glUniform3f(objColorLocation, 1.0, 0.0, 1.0);
+    glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
 }

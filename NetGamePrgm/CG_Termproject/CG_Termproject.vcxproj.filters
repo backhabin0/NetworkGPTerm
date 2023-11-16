@@ -50,9 +50,6 @@
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="main - 복사본.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="CMesh.cpp">
       <Filter>소스 파일\CMesh</Filter>
     </ClCompile>

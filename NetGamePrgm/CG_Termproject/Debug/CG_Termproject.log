@@ -1,2 +1,6 @@
-﻿  NetworkMgr.cpp
-  CG_Termproject.vcxproj -> C:\Users\Owner\Desktop\넷겜플 텀프\CG_Termproject_\Debug\CG_Termproject.exe
+﻿  CMesh.cpp
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\NetGamePrgm\CG_Termproject\CMesh.cpp(34,18): warning C4101: 'sizeY' :참조되지 않은 지역 변수입니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\NetGamePrgm\CG_Termproject\CMesh.cpp(34,25): warning C4101: 'sizeZ' :참조되지 않은 지역 변수입니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\NetGamePrgm\CG_Termproject\CMesh.cpp(34,11): warning C4101: 'sizeX' :참조되지 않은 지역 변수입니다.
+C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\NetGamePrgm\CG_Termproject\CMesh.cpp(32,11): warning C4101: 'scaleAll' :참조되지 않은 지역 변수입니다.
+  CG_Termproject.vcxproj -> C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\NetGamePrgm\Debug\CG_Termproject.exe

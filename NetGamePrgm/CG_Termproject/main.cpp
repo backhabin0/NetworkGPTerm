@@ -5,7 +5,7 @@
 #include "CTexture.h"
 #include "CShader.h"
 
-struct player{
+struct player {
 	int hp = 100;
 	float x = 0.0, y = 0.0, z = 0.0;
 	float scalex = 3;
@@ -23,8 +23,8 @@ void Timer(int Value);
 void hpbar();
 void InitBuffer();
 GLint height, width; //윈도우창 크기 
-CMesh *mesh = new CMesh();
-
+CMesh* mesh = new CMesh();
+CMesh* item = new CMesh();
 
 //오브젝트 불러오기
 std::vector< glm::vec3 > underbody_vertices[4];
@@ -220,7 +220,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 
 	//make shaders
 	shader = new CShader();
-	
+
 	shader->make_vertexShaders(); //--- 버텍스 세이더 만들기
 	shader->make_fragmentShaders(); //--- 프래그먼트 세이더 만들기
 	shader->make_shaderProgram(); //--- 세이더 프로그램 만들기
@@ -248,7 +248,7 @@ void convertDeviceXY2OpenglXY(int x, int y, float* xpos, float* ypos)
 	int h = height;
 	*xpos = (float)((x - (float)w / 2.0) * (float)(1.0 / (float)(w / 2.0)));
 	*ypos = -(float)((y - (float)h / 2.0) * (float)(1.0 / (float)(h / 2.0)));
-	
+
 }
 
 void Mouse(int button, int state, int x, int y)
@@ -272,7 +272,7 @@ void Mouse(int button, int state, int x, int y)
 
 GLuint VAO_map[4], VBO_mapPos[4], VBO_mapnormal[4];
 GLuint VAO_sphere, VBO_spherepos, VBO_spherenormal;
-GLuint VAO_item[4], VBO_itemPos[4], VBO_itemnormal[4];
+GLuint VAO_item[4], VBO_itemPos[4], VBO_itemnormal[4],VBO_itemuvs[4];
 
 typedef struct obj {
 	unsigned int texture;
@@ -285,13 +285,11 @@ obj brick;
 obj scene;
 obj tank;
 obj map;
-GLint map_object = mesh->loadOBJ("cube.obj",map.out_vertices,map.out_uvs,map.out_normals);
+GLint map_object = mesh->loadOBJ("cube.obj", map.out_vertices, map.out_uvs, map.out_normals);
 GLint tank_object = mesh->loadOBJ("try.obj", tank.out_vertices, tank.out_uvs, tank.out_normals);
-GLint cube = mesh->loadOBJ("cube.obj", item_vertices[0], item_uvs[0], item_normals[0]);
+GLint cube = item->loadOBJ("cube.obj", item_vertices[0], item_uvs[0], item_normals[0]);
 GLint sphere_object = mesh->loadOBJ("sphere.obj", sphere_vertices, sphere_uvs, sphere_normals);
 GLvoid InitBuffer() {
-	sphere_normals;
-
 
 	glGenVertexArrays(1, &scene.VAO);
 	glGenBuffers(1, &scene.VBO_pos);
@@ -318,6 +316,13 @@ GLvoid InitBuffer() {
 	GLint cAttribute8 = glGetAttribLocation(shader->Get_shaderProgram(), "aTexCoord");
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
+
+
+
+
+
+
+
 	//---------------------------------------------------------------------------------------------------------------------------
 	//탱크 버퍼
 
@@ -329,48 +334,23 @@ GLvoid InitBuffer() {
 	glGenBuffers(1, &tank.VBO_pos);
 	glBindBuffer(GL_ARRAY_BUFFER, tank.VBO_pos);
 	glBufferData((GL_ARRAY_BUFFER), tank.out_vertices.size() * sizeof(glm::vec3), &tank.out_vertices.front(), GL_STATIC_DRAW);
-	GLint pAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aPos");
-	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
-	glEnableVertexAttribArray(pAttribute);
+	//GLint pAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aPos");
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glEnableVertexAttribArray(0);
 
 	glGenBuffers(1, &tank.VBO_normal);
 	glBindBuffer(GL_ARRAY_BUFFER, tank.VBO_normal);
 	glBufferData(GL_ARRAY_BUFFER, tank.out_normals.size() * sizeof(glm::vec3), &tank.out_normals.front(), GL_STATIC_DRAW);
-	GLint nAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aNormal");
-	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-	glEnableVertexAttribArray(nAttribute);
+	//GLint nAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aNormal");
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+	glEnableVertexAttribArray(1);
 
 	glGenBuffers(1, &tank.VBO_uv);
 	glBindBuffer(GL_ARRAY_BUFFER, tank.VBO_uv);
 	glBufferData(GL_ARRAY_BUFFER, tank.out_uvs.size() * sizeof(glm::vec2), &tank.out_uvs.front(), GL_STATIC_DRAW);
-	GLint cAttribute9 = glGetAttribLocation(shader->Get_shaderProgram(), "aTexCoord");
-	glVertexAttribPointer(cAttribute9, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
-	glEnableVertexAttribArray(cAttribute9);
-	//탱크 버퍼
-
-	/*glGenVertexArrays(1, &tank.VAO);
-	glBindVertexArray(tank.VAO);
-
-	glGenBuffers(1, &tank.VBO_pos);
-	glBindBuffer(GL_ARRAY_BUFFER, tank.VBO_pos);
-	glBufferData((GL_ARRAY_BUFFER), tank.out_vertices.size() * sizeof(glm::vec3), &tank.out_vertices.front(), GL_STATIC_DRAW);
-	GLint pAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aPos");
-	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
-	glEnableVertexAttribArray(pAttribute);
-
-	glGenBuffers(1, &tank.VBO_normal);
-	glBindBuffer(GL_ARRAY_BUFFER, tank.VBO_normal);
-	glBufferData(GL_ARRAY_BUFFER, tank.out_normals.size() * sizeof(glm::vec3), &tank.out_normals.front(), GL_STATIC_DRAW);
-	GLint nAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aNormal");
-	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-	glEnableVertexAttribArray(nAttribute);
-
-	glGenBuffers(1, &tank.VBO_uv);
-	glBindBuffer(GL_ARRAY_BUFFER, tank.VBO_uv);
-	glBufferData(GL_ARRAY_BUFFER, tank.out_uvs.size() * sizeof(glm::vec2), &tank.out_uvs.front(), GL_STATIC_DRAW);
-	GLint cAttribute9 = glGetAttribLocation(shader->Get_shaderProgram(), "aTexCoord");
-	glVertexAttribPointer(cAttribute9, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
-	glEnableVertexAttribArray(cAttribute9);*/
+	//GLint cAttribute9 = glGetAttribLocation(shader->Get_shaderProgram(), "aTexCoord");
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+	glEnableVertexAttribArray(2);
 
 
 	//맵 버퍼---------------------------------------------------------------------------------------------------------------------------
@@ -390,8 +370,14 @@ GLvoid InitBuffer() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
 
+	glGenBuffers(1, &map.VBO_uv);
+	glBindBuffer(GL_ARRAY_BUFFER, map.VBO_uv);
+	glBufferData(GL_ARRAY_BUFFER, map.out_uvs.size() * sizeof(glm::vec2), &map.out_uvs.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+	glEnableVertexAttribArray(2);
 
-	
+
+
 
 	//-------------------------------------------------------------------------------------------------------------------------------
 	//포탄
@@ -401,30 +387,32 @@ GLvoid InitBuffer() {
 	glGenBuffers(1, &VBO_spherepos);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_spherepos);
 	glBufferData((GL_ARRAY_BUFFER), sphere_vertices.size() * sizeof(glm::vec3), &sphere_vertices[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
-	glEnableVertexAttribArray(pAttribute);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glEnableVertexAttribArray(0);
 
 	glGenBuffers(1, &VBO_spherenormal);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_spherenormal);
 	glBufferData(GL_ARRAY_BUFFER, sphere_normals.size() * sizeof(glm::vec3), &sphere_normals[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-	glEnableVertexAttribArray(nAttribute);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+	glEnableVertexAttribArray(1);
 
 	//아이템 -------------------------------------------------------------------------------------------------------------------
-	//glGenVertexArrays(1, &VAO_item[0]);
-	//glBindVertexArray(VAO_item[0]);
+	/*glGenVertexArrays(1, &VAO_item[0]);
+	glBindVertexArray(VAO_item[0]);
 
-	//glGenBuffers(1, &VBO_itemPos[0]);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO_itemPos[0]);
-	//glBufferData((GL_ARRAY_BUFFER), item_vertices[0].size() * sizeof(glm::vec3), &item_vertices[0][0], GL_STATIC_DRAW);
-	//glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
-	//glEnableVertexAttribArray(pAttribute);
+	glGenBuffers(1, &VBO_itemPos[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_itemPos[0]);
+	glBufferData((GL_ARRAY_BUFFER), item_vertices[0].size() * sizeof(glm::vec3), &item_vertices[0][0], GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glEnableVertexAttribArray(0);
 
-	//glGenBuffers(1, &VBO_itemnormal[0]);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO_itemnormal[0]);
-	//glBufferData(GL_ARRAY_BUFFER, item_normals[0].size() * sizeof(glm::vec3), &item_normals[0][0], GL_STATIC_DRAW);
-	//glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-	//glEnableVertexAttribArray(nAttribute);
+	glGenBuffers(1, &VBO_itemnormal[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_itemnormal[0]);
+	glBufferData(GL_ARRAY_BUFFER, item_normals[0].size() * sizeof(glm::vec3), &item_normals[0][0], GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+	glEnableVertexAttribArray(1);
+	*/
+	item->loadmesh();
 
 
 	// -------------------------------------------------------------------------------------------------------------------------
@@ -456,7 +444,7 @@ GLvoid drawObj() {
 	glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
 	unsigned int objColorLocation = glGetUniformLocation(shader->Get_shaderProgram(), "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 	glUniform3f(objColorLocation, 2, 2, 2);
-	texture->InitTexture("t_tank2.png", &tank.texture);
+	texture->InitTexture("t_yellow.png", &tank.texture);
 	glBindTexture(GL_TEXTURE_2D, tank.texture);
 	glBindVertexArray(tank.VAO);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -469,7 +457,7 @@ GLvoid drawObj() {
 	glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(head));
 	//head
 	glBindVertexArray(tank.VAO);
-	//glDrawArrays(GL_TRIANGLES, 21000, tank_object);
+	glDrawArrays(GL_TRIANGLES, 21000, tank_object);
 
 
 	//glDrawArrays(GL_TRIANGLES, 0, tank_object);
@@ -486,7 +474,7 @@ GLvoid drawObj() {
 
 	unsigned int mapColor = glGetUniformLocation(shader->Get_shaderProgram(), "objectColor");
 	glUniform3f(objColorLocation, 0.3, 0.3, 0.3);
-	glDrawArrays(GL_TRIANGLES, 0,map.out_vertices.size());
+	glDrawArrays(GL_TRIANGLES, 0, map.out_vertices.size());
 	//glDrawArrays(GL_TRIANGLES, 0, underbody_vertices[2].size());
 	texture->InitTexture("hpbar2.png", &brick.texture);
 	glBindTexture(GL_TEXTURE_2D, brick.texture);
@@ -520,45 +508,8 @@ GLvoid drawObj() {
 	//---------------------------------------------------------------------------------------------------------
 	//아이템
 
-
-	//체력 회복
-	for (int i = 0; i < 3; i++) {
-		if (heart[i].exist) {
-			glm::mat4 hearts = glm::mat4(1.0);
-			hearts = glm::translate(hearts, glm::vec3(heart[i].x, heart[i].y, heart[i].z));
-			hearts = glm::scale(hearts, glm::vec3(0.2, 0.2, 0.2));
-			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(hearts));
-			glBindVertexArray(VAO_item[0]);
-			glUniform3f(objColorLocation, 1.0, 0.0, 0.0);
-			glDrawArrays(GL_TRIANGLES, 0, cube);
-		}
-	}
-
-	//속도 증가
-	for (int i = 0; i < 3; i++) {
-		if (wheel[i].exist) {
-			glm::mat4 velocity = glm::mat4(1.0);
-			velocity = glm::translate(velocity, glm::vec3(wheel[i].x, wheel[i].y, wheel[i].z));
-			velocity = glm::scale(velocity, glm::vec3(0.2, 0.2, 0.2));
-			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(velocity));
-			glBindVertexArray(VAO_item[0]);
-			glUniform3f(objColorLocation, 0.0, 0.0, 1.0);
-			glDrawArrays(GL_TRIANGLES, 0, cube);
-		}
-	}
-
-	//무적 상태
-	for (int i = 0; i < 3; i++) {
-		if (god[i].exist) {
-			glm::mat4 godmode = glm::mat4(1.0);
-			godmode = glm::translate(godmode, glm::vec3(god[i].x, god[i].y, god[i].z));
-			godmode = glm::scale(godmode, glm::vec3(0.2, 0.2, 0.2));
-			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(godmode));
-			glBindVertexArray(VAO_item[0]);
-			glUniform3f(objColorLocation, 0.0, 1.0, 0.0);
-			glDrawArrays(GL_TRIANGLES, 0, cube);
-		}
-	}
+	item->render();
+	
 
 
 }
@@ -1050,5 +1001,5 @@ void hpbar() {
 	}
 	u_hpscalex -= 0.002 * hpbardir;
 	u_hptransx -= 0.001 * hpbardir;
-	
+
 }
