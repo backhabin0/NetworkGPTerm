@@ -1,1 +1,98 @@
-﻿  CG_Termproject.vcxproj -> C:\Users\Owner\Desktop\넷겜플 텀프\NetworkGPTerm\NetGamePrgm\Debug\CG_Termproject.exe
+﻿  CCamera.cpp
+  CMesh.cpp
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\CMesh.cpp(37,18): warning C4101: 'sizeY' :참조되지 않은 지역 변수입니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\CMesh.cpp(37,25): warning C4101: 'sizeZ' :참조되지 않은 지역 변수입니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\CMesh.cpp(37,11): warning C4101: 'sizeX' :참조되지 않은 지역 변수입니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\CMesh.cpp(35,11): warning C4101: 'scaleAll' :참조되지 않은 지역 변수입니다.
+  CObject.cpp
+  CPlayer.cpp
+  CShader.cpp
+  CTexture.cpp
+  main.cpp
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(215,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(294,2): warning C4091: 'typedef ': 변수를 선언하지 않으면 'obj' 왼쪽은 무시됩니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(487,42): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(487,37): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(487,32): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(532,15): warning C4305: '인수': 'double'에서 'GLclampf'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(563,23): warning C4305: '-=': 'double'에서 'T'(으)로 잘립니다.
+          with
+          [
+              T=float
+          ]
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(564,19): warning C4305: '=': 'double'에서 'T'(으)로 잘립니다.
+          with
+          [
+              T=float
+          ]
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(670,13): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(679,19): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(684,19): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(692,19): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(694,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(698,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(699,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(703,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(704,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(709,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(710,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(714,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(715,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(719,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(720,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(724,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(725,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(773,63): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(773,47): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(773,31): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(773,15): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(772,100): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(772,79): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(772,58): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(772,37): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(809,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(809,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(809,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(809,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(808,87): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(808,69): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(808,51): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(808,33): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(824,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(824,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(824,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(824,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(823,87): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(823,69): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(823,51): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(823,33): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(828,13): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(839,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(839,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(839,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(839,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(838,79): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(838,63): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(838,47): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(838,31): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(861,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(862,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(868,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(869,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(875,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(876,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(882,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(883,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(901,11): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(902,11): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(908,10): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(909,10): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(951,28): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(952,28): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(956,24): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(957,24): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(1034,22): warning C4244: '-=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\CG_Termproject\main.cpp(1035,22): warning C4244: '-=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  NetworkMgr.cpp
+  코드를 생성하고 있습니다...
+  CG_Termproject.vcxproj -> C:\Users\jinsu\Documents\GitHub\NetworkGPTerm\NetGamePrgm\Debug\CG_Termproject.exe
