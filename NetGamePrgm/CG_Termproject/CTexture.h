@@ -1,7 +1,7 @@
 #pragma once
 class CTexture
 {
-private:
+public:
 	CTexture();
 	~CTexture();
 public:

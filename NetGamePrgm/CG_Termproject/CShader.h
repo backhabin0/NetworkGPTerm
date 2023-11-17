@@ -1,8 +1,9 @@
 #pragma once
-#include "std.h"
+
 class CShader
 {
-public:
+	DECLARE_SINGLETON(CShader)
+private:
 	CShader();
 	~CShader();
 private:

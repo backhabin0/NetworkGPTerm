@@ -1,5 +1,9 @@
 #include "std.h"
 #include "CMesh.h"
+#include "CTexture.h"
+#include "CShader.h"
+
+CTexture* texture_ = new CTexture;
 
 CMesh::CMesh()
 {
@@ -123,7 +127,7 @@ GLint CMesh::loadOBJ(const char* path,
 
 
         out_vertices.push_back(temp);
-        //m_vertices.push_back(temp);
+        m_vertices.push_back(temp);
 
         //glm::vec3 vertex = temp_vertices[vertexIndex - 1];
         //outvertex.push_back(vertex);
@@ -135,14 +139,14 @@ GLint CMesh::loadOBJ(const char* path,
         unsigned int uvIndex = uvIndices[i];
         glm::vec2 vertex = temp_uvs[uvIndex - 1];
         out_uvs.push_back(vertex);
-        //m_uvs.push_back(vertex);
+        m_uvs.push_back(vertex);
 
     }
     for (unsigned int i = 0; i < normalIndices.size(); i++) {
         unsigned int normalIndex = normalIndices[i];
         glm::vec3 vertex = temp_normals[normalIndex - 1];
         out_normals.push_back(vertex);
-        //m_normals.push_back(vertex);
+        m_normals.push_back(vertex);
 
     }
 
@@ -157,13 +161,107 @@ void CMesh::loadmesh()
 
     glGenBuffers(1, &VBO_pos);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_pos);
-    glBufferData((GL_ARRAY_BUFFER), m_vertices.size() * sizeof(glm::vec3), &m_vertices, GL_STATIC_DRAW);
+    glBufferData((GL_ARRAY_BUFFER), m_vertices.size() * sizeof(glm::vec3), &m_vertices.front(), GL_STATIC_DRAW);
+    //GLint pAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aPos");
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
     glEnableVertexAttribArray(0);
 
     glGenBuffers(1, &VBO_normal);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_normal);
-    glBufferData(GL_ARRAY_BUFFER, m_normals.size() * sizeof(glm::vec3), &m_normals, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,m_normals.size() * sizeof(glm::vec3), &m_normals.front(), GL_STATIC_DRAW);
+    //GLint nAttribute = glGetAttribLocation(shader->Get_shaderProgram(), "aNormal");
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
     glEnableVertexAttribArray(1);
+
+    glGenBuffers(1, &VBO_uv);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_uv);
+    glBufferData(GL_ARRAY_BUFFER, m_uvs.size() * sizeof(glm::vec2), &m_uvs.front(), GL_STATIC_DRAW);
+    //GLint cAttribute9 = glGetAttribLocation(shader->Get_shaderProgram(), "aTexCoord");
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+    glEnableVertexAttribArray(2);
+}
+
+void CMesh::render()
+{
+    int modeltrans_ = glGetUniformLocation(CShader::GetInstance()->Get_shaderProgram(), "modeltrans");
+    unsigned int objColorLocation_ = glGetUniformLocation(CShader::GetInstance()->Get_shaderProgram(), "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+
+
+    glm::mat4 matrix(1.0f);
+
+    matrix = glm::translate(matrix, m_vec3Translate);
+
+    matrix = glm::rotate(matrix, glm::radians(m_vec3Rotate.x), glm::vec3(1.0, 0.0, 0.0));
+    matrix = glm::rotate(matrix, glm::radians(m_vec3Rotate.y), glm::vec3(0.0, 1.0, 0.0));
+    matrix = glm::rotate(matrix, glm::radians(m_vec3Rotate.z), glm::vec3(0.0, 0.0, 1.0));
+
+
+    matrix = glm::scale(matrix, m_vec3Scale);
+
+    glUniformMatrix4fv(modeltrans_, 1, GL_FALSE, glm::value_ptr(matrix));
+    glBindVertexArray(VAO);
+    glUniform3f(objColorLocation_, 1.0, 1.0, 1.0);
+    texture_->InitTexture("t_yellow.png", &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+}
+
+/// <summary>
+/// ////////////////////////////////////////////////////////////////////////////////
+/// </summary>
+
+CTank::CTank()
+{
+}
+
+CTank::~CTank()
+{
+}
+
+GLint CTank::loadOBJ(const char* path, std::vector<glm::vec3>& out_vertices, std::vector<glm::vec2>& out_uvs, std::vector<glm::vec3>& out_normals)
+{
+    GLint result = CMesh::loadOBJ(path, out_vertices, out_uvs, out_normals);
+    return result;
+}
+
+void CTank::loadmesh()
+{
+    CMesh::loadmesh();
+}
+
+void CTank::render()
+{
+    int modeltrans_ = glGetUniformLocation(CShader::GetInstance()->Get_shaderProgram(), "modeltrans");
+    unsigned int objColorLocation_ = glGetUniformLocation(CShader::GetInstance()->Get_shaderProgram(), "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+
+
+    glm::mat4 matrix(1.0f);
+
+    matrix = glm::translate(matrix, m_vec3Translate);
+
+    matrix = glm::rotate(matrix, glm::radians(m_vec3Rotate.x), glm::vec3(1.0, 0.0, 0.0));
+    matrix = glm::rotate(matrix, glm::radians(m_vec3Rotate.y), glm::vec3(0.0, 1.0, 0.0));
+    matrix = glm::rotate(matrix, glm::radians(m_vec3Rotate.z), glm::vec3(0.0, 0.0, 1.0));
+
+
+    matrix = glm::scale(matrix, m_vec3Scale);
+
+    glUniformMatrix4fv(modeltrans_, 1, GL_FALSE, glm::value_ptr(matrix));
+    glBindVertexArray(VAO);
+    glUniform3f(objColorLocation_, 2.0, 2.0, 2.0);
+    texture_->InitTexture("t_yellow.png", &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glm::mat4 head = glm::mat4(1.0);
+    head = glm::rotate(head, glm::radians(m_vec3HeadRotate.x), glm::vec3(1.0, 0.0, 0.0));
+    head = glm::rotate(head, glm::radians(m_vec3HeadRotate.y), glm::vec3(0.0, 1.0, 0.0));
+    head = glm::rotate(head, glm::radians(m_vec3HeadRotate.z), glm::vec3(0.0, 0.0, 1.0));
+    head = matrix * head;
+    glUniformMatrix4fv(modeltrans_, 1, GL_FALSE, glm::value_ptr(head));
+    //head
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 21000, m_vertices.size());
 }

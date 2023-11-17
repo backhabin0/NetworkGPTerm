@@ -1,5 +1,8 @@
+#include "std.h"
 #include "CShader.h"
 #include "CRender.h"
+
+IMPLEMENT_SINGLETON(CShader)
 
 CShader::CShader()
 {
