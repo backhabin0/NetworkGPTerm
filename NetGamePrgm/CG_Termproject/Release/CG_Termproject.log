@@ -1,4 +1,91 @@
-﻿  objReader.cpp
-C:\Users\jinsu\Desktop\CG_Termproject_\CG_Termproject_\CG_Termproject\std.h(8,10): fatal  error C1083: 포함 파일을 열 수 없습니다. 'glm/glm/glm.hpp': No such file or directory
-  main.cpp
-C:\Users\jinsu\Desktop\CG_Termproject_\CG_Termproject_\CG_Termproject\std.h(8,10): fatal  error C1083: 포함 파일을 열 수 없습니다. 'glm/glm/glm.hpp': No such file or directory
+﻿  main.cpp
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(196,1): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(386,42): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(386,37): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(386,32): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(418,42): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(418,37): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(418,32): warning C4305: '인수': 'double'에서 'GLfloat'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(507,15): warning C4305: '인수': 'double'에서 'GLclampf'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(539,23): warning C4305: '-=': 'double'에서 'T'(으)로 잘립니다.
+          with
+          [
+              T=float
+          ]
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(540,19): warning C4305: '=': 'double'에서 'T'(으)로 잘립니다.
+          with
+          [
+              T=float
+          ]
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(621,13): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(628,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(629,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(632,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(633,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(636,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(637,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(639,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(640,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(644,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(645,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(648,38): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(649,23): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(652,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(653,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(655,38): warning C4305: '-=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(656,23): warning C4305: '+=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(702,63): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(702,47): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(702,31): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(702,15): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(701,100): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(701,79): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(701,58): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(701,37): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(738,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(738,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(738,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(738,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(737,87): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(737,69): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(737,51): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(737,33): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(753,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(753,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(753,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(753,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(752,87): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(752,69): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(752,51): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(752,33): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(757,13): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(768,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(768,46): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(768,30): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(768,14): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(767,79): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(767,63): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(767,47): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(767,31): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(790,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(791,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(797,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(798,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(804,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(805,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(811,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(812,15): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(847,11): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(848,11): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(854,10): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(855,10): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(896,28): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(897,28): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(901,24): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\jinsu\Downloads\CG_Termproject_\CG_Termproject\main.cpp(902,24): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  코드를 생성하고 있습니다.
+  4 of 302 functions ( 1.3%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    6 functions had inline decision re-evaluated but remain unchanged
+  코드를 생성했습니다.
+  CG_Termproject.vcxproj -> C:\Users\jinsu\Downloads\CG_Termproject_\Release\CG_Termproject.exe

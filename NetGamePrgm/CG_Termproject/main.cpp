@@ -1,5 +1,4 @@
 #include "objReader.h"
-
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 GLvoid Resize(int w, int h);
@@ -7,7 +6,6 @@ void Mouse(int button, int state, int x, int y);
 void Motion(int xpos, int ypos);
 void Keyboard(unsigned char key, int x, int y);
 void Timer(int Value);
-void Timer_1sec(int value);
 void make_vertexShaders(); //버텍스 세이더 만들기
 void make_fragmentShaders(); //프래그먼트 세이더 만들기
 void make_shaderProgram(); //세이더 프로그램 생성
@@ -19,11 +17,18 @@ GLuint shaderProgram; //세이더 프로그램 이름
 GLuint vertexShader;//버텍스 세이더 객체
 GLuint fragmentShader;//프래그먼트 세이더 객체
 
-//오브젝트 불러오기
-std::vector< glm::vec3 > underbody_vertices[4];
-std::vector< glm::vec2 > underbody_uvs[4];
-std::vector< glm::vec3 > underbody_normals[4];
 
+struct OBJ {
+	GLuint VAO, VBO_pos, VBO_normal, VBO_uv;
+	std::vector<glm::vec3> m_vertices;
+	std::vector<glm::vec2> m_uvs;
+	std::vector<glm::vec3> m_normals;
+};
+OBJ tankbody;
+OBJ block;
+OBJ map;
+OBJ item;
+OBJ sphere;
 
 //랜덤출력
 using namespace std;
@@ -44,11 +49,10 @@ bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, f
 bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU, float bL, float bR, float bT, float bB, float bD, float bU);
 void item_colliCHK();
 bool mov_coliiCHK();
-
 void item_setup();
-
 void Setup_Block(); // 블럭 초기화
 void get_Block(); // 블록 출력
+
 
 //색상
 struct COLOR
@@ -59,7 +63,7 @@ struct COLOR
 };
 
 //탱크
-GLint tank_object = loadOBJ("try.obj", underbody_vertices[0], underbody_uvs[0], underbody_normals[0]);
+GLint tank_object = loadOBJ("try.obj", tankbody.m_vertices, tankbody.m_uvs, tankbody.m_normals);
 struct Player_tank {
 	int hp = 100;
 	float x = 0.0, y = 0.0, z = 0.0;
@@ -69,8 +73,8 @@ float rotate_bigY = 180; // 객체 자전
 
 //----------------------------------------------------------------------------------------------------------
 // 블록/맵
-GLint map = loadOBJ("cube.obj", underbody_vertices[1], underbody_uvs[1], underbody_normals[1]);
-GLint block = loadOBJ("cube.obj", underbody_vertices[2], underbody_uvs[2], underbody_normals[2]);
+GLint mapobject = loadOBJ("cube.obj", map.m_vertices,map.m_uvs,map.m_normals);
+GLint blockobject = loadOBJ("cube.obj", block.m_vertices,block.m_uvs,block.m_normals);
 
 
 // 장애물
@@ -94,6 +98,8 @@ struct Map_Block
 };
 
 Map_Block Block[30][30];
+
+bool chaseOn = true;
 
 //----------------------------------------------------------------------------------------------------------
 //카메라
@@ -125,30 +131,22 @@ float lastX, lastY;
 //------------------------------------------------------------------------------------------------------
 //포탄 
 
-std::vector< glm::vec3 > sphere_vertices;
-std::vector< glm::vec2 > sphere_uvs;
-std::vector< glm::vec3 > sphere_normals;
-GLint sphere_object = loadOBJ("sphere.obj", sphere_vertices, sphere_uvs, sphere_normals);
+GLint sphere_object = loadOBJ("sphere.obj", sphere.m_vertices,sphere.m_uvs,sphere.m_normals);
 
 int k = 0; //포탄 넘버
 
-struct Sphere {
+struct Sphere_ {
 	bool launch = false;
 	float sphere_z = 0;
 	float now_yaw = 0;
 };
 
-struct Sphere sphere[500]; // 포탄의 갯수 
+struct Sphere_ sphere_[500]; // 포탄의 갯수 
 glm::mat4 spheres_pos;
 glm::vec4 sphere_position; //포탄의 위치 (충돌처리용)
 
-//-------------------------------------------------------------------------------------------------------
-//아이템 
-std::vector< glm::vec3 > item_vertices[4];
-std::vector< glm::vec2 > item_uvs[4];
-std::vector< glm::vec3 > item_normals[4];
 
-GLint cube = loadOBJ("cube.obj", item_vertices[0], item_uvs[0], item_normals[0]);
+GLint itemobject = loadOBJ("cube.obj", item.m_vertices,item.m_uvs,item.m_normals);
 
 
 struct Heart {
@@ -215,6 +213,8 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	item_setup();
 
 
+
+
 	//call back
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
 	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
@@ -222,7 +222,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	glutMouseFunc(Mouse);//마우스 콜백
 	glutPassiveMotionFunc(Motion);//마우스 움직임
 	glutTimerFunc(30, Timer, 1); //애니매이션 타이머
-	glutTimerFunc(1000, Timer_1sec, 1);
+
 
 	glutMainLoop(); // 이벤트 처리 시작 
 }
@@ -243,14 +243,14 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_mapPos[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[0]);
-	glBufferData((GL_ARRAY_BUFFER), underbody_vertices[0].size() * sizeof(glm::vec3), &underbody_vertices[0][0], GL_STATIC_DRAW);
+	glBufferData((GL_ARRAY_BUFFER),tankbody.m_vertices.size()* sizeof(glm::vec3), &tankbody.m_vertices[0], GL_STATIC_DRAW);
 	GLint pAttribute = glGetAttribLocation(shaderProgram, "aPos");
 	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(pAttribute);
 
 	glGenBuffers(1, &VBO_mapnormal[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[0]);
-	glBufferData(GL_ARRAY_BUFFER, underbody_normals[0].size() * sizeof(glm::vec3), &underbody_normals[0][0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,tankbody.m_normals.size()* sizeof(glm::vec3), &tankbody.m_normals[0], GL_STATIC_DRAW);
 	GLint nAttribute = glGetAttribLocation(shaderProgram, "aNormal");
 	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(nAttribute);
@@ -264,13 +264,13 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_mapPos[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[1]);
-	glBufferData((GL_ARRAY_BUFFER), underbody_vertices[1].size() * sizeof(glm::vec3), &underbody_vertices[1][0], GL_STATIC_DRAW);
+	glBufferData((GL_ARRAY_BUFFER),map.m_vertices.size() * sizeof(glm::vec3), &map.m_vertices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 
 	glGenBuffers(1, &VBO_mapnormal[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[1]);
-	glBufferData(GL_ARRAY_BUFFER, underbody_normals[1].size() * sizeof(glm::vec3), &underbody_normals[1][0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,map.m_normals.size() * sizeof(glm::vec3), &map.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
 
@@ -281,13 +281,13 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_mapPos[2]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[2]);
-	glBufferData((GL_ARRAY_BUFFER), underbody_vertices[2].size() * sizeof(glm::vec3), &underbody_vertices[2][0], GL_STATIC_DRAW);
+	glBufferData((GL_ARRAY_BUFFER),block.m_vertices.size()* sizeof(glm::vec3), &block.m_vertices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 
 	glGenBuffers(1, &VBO_mapnormal[2]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[2]);
-	glBufferData(GL_ARRAY_BUFFER, underbody_normals[2].size() * sizeof(glm::vec3), &underbody_normals[2][0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,tankbody.m_normals.size() * sizeof(glm::vec3), &tankbody.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
 	
@@ -298,13 +298,13 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_spherepos);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_spherepos);
-	glBufferData((GL_ARRAY_BUFFER), sphere_vertices.size() * sizeof(glm::vec3), &sphere_vertices[0], GL_STATIC_DRAW);
+	glBufferData((GL_ARRAY_BUFFER), sphere.m_vertices.size() * sizeof(glm::vec3), &sphere.m_vertices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(pAttribute);
 
 	glGenBuffers(1, &VBO_spherenormal);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_spherenormal);
-	glBufferData(GL_ARRAY_BUFFER, sphere_normals.size() * sizeof(glm::vec3), &sphere_normals[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,sphere.m_normals.size() * sizeof(glm::vec3), &sphere.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(nAttribute);
 
@@ -314,13 +314,13 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_itemPos[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_itemPos[0]);
-	glBufferData((GL_ARRAY_BUFFER), item_vertices[0].size() * sizeof(glm::vec3), &item_vertices[0][0], GL_STATIC_DRAW);
+	glBufferData((GL_ARRAY_BUFFER), item.m_vertices.size() * sizeof(glm::vec3), &item.m_vertices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(pAttribute);
 
 	glGenBuffers(1, &VBO_itemnormal[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_itemnormal[0]);
-	glBufferData(GL_ARRAY_BUFFER, item_normals[0].size() * sizeof(glm::vec3), &item_normals[0][0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, item.m_normals.size() * sizeof(glm::vec3), &item.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(nAttribute);
 
@@ -368,7 +368,6 @@ void start_page() {
 	unsigned int projectionLocation = glGetUniformLocation(shaderProgram, "projectionTransform"); //--- 투영 변환 값 설정
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
 
-
 }
 
 
@@ -386,6 +385,8 @@ GLvoid drawObj() {
 	unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 	glUniform3f(objColorLocation, 0.4, 0.8, 0.4);
 
+
+	/*
 	//35931 (vertex number)
 	//body 
 	glBindVertexArray(VAO_map[0]);
@@ -399,7 +400,7 @@ GLvoid drawObj() {
 	//head
 	glBindVertexArray(VAO_map[0]);
 	glDrawArrays(GL_TRIANGLES, 21000, tank_object);
-
+	*/
 
 	glDrawArrays(GL_TRIANGLES, 0, tank_object);
 
@@ -416,23 +417,23 @@ GLvoid drawObj() {
 	unsigned int mapColor = glGetUniformLocation(shaderProgram, "objectColor");
 	glUniform3f(objColorLocation, 0.3, 0.3, 0.3);
 
-	glDrawArrays(GL_TRIANGLES, 0, underbody_vertices[1].size());
+	glDrawArrays(GL_TRIANGLES, 0, map.m_vertices.size());
+
 
 	//장애물 - 블록
 	get_Block();
 
-
-
+	
 	//--------------------------------------------------------------------------------------------------
 	//포탄
-	if (sphere[k].launch) {
+	if (sphere_[k].launch) {
 		glm::mat4 spheres_scale = glm::mat4(1.0);
 		spheres_pos = glm::mat4(1.0);
 		if (!(Player.x == 0 && Player.y == 0 && Player.z == 0)) { //탱크의 위치가 원점이 아닌 경우 
 			spheres_pos = glm::translate(spheres_pos, glm::vec3(Player.x, Player.y, Player.z)); //원점에서 회전 후 탱크의 이동으로 위치 변경 
 		}
-		spheres_pos = glm::rotate(spheres_pos, glm::radians(sphere[k].now_yaw), glm::vec3(0.0, 1.0, 0.0));
-		spheres_pos = glm::translate(spheres_pos, glm::vec3(0.0, 0.0, sphere[k].sphere_z));
+		spheres_pos = glm::rotate(spheres_pos, glm::radians(sphere_[k].now_yaw), glm::vec3(0.0, 1.0, 0.0));
+		spheres_pos = glm::translate(spheres_pos, glm::vec3(0.0, 0.0, sphere_[k].sphere_z));
 		spheres_scale = glm::scale(spheres_scale, glm::vec3(0.07, 0.07, 0.07));
 		spheres_pos = spheres_pos * spheres_scale;
 		glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(spheres_pos));
@@ -453,7 +454,7 @@ GLvoid drawObj() {
 			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(hearts));
 			glBindVertexArray(VAO_item[0]);
 			glUniform3f(objColorLocation, 1.0, 0.0, 0.0);
-			glDrawArrays(GL_TRIANGLES, 0, cube);
+			glDrawArrays(GL_TRIANGLES, 0, itemobject);
 		}
 	}
 
@@ -466,7 +467,7 @@ GLvoid drawObj() {
 			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(velocity));
 			glBindVertexArray(VAO_item[0]);
 			glUniform3f(objColorLocation, 0.0, 0.0, 1.0);
-			glDrawArrays(GL_TRIANGLES, 0, cube);
+			glDrawArrays(GL_TRIANGLES, 0, itemobject);
 		}
 	}
 
@@ -479,7 +480,20 @@ GLvoid drawObj() {
 			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(godmode));
 			glBindVertexArray(VAO_item[0]);
 			glUniform3f(objColorLocation, 0.0, 1.0, 0.0);
-			glDrawArrays(GL_TRIANGLES, 0, cube);
+			glDrawArrays(GL_TRIANGLES, 0, itemobject);
+		}
+	}
+
+	//좀비 얼리기
+	for (int i = 0; i < 3; i++) {
+		if (ice[i].exist) {
+			glm::mat4 freeze = glm::mat4(1.0);
+			freeze = glm::translate(freeze, glm::vec3(ice[i].x, ice[i].y, ice[i].z));
+			freeze = glm::scale(freeze, glm::vec3(0.2, 0.2, 0.2));
+			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(freeze));
+			glBindVertexArray(VAO_item[0]);
+			glUniform3f(objColorLocation, 1.0, 1.0, 0.0);
+			glDrawArrays(GL_TRIANGLES, 0, itemobject);
 		}
 	}
 
@@ -517,9 +531,6 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		cameraPos.z = Player.z;
 		cameraPos.y = CamPos.y; //카메라를 위쪽(y축)으로 조정
 
-		cameraUp = glm::vec3(0.0, 1.0, 0.0); //--- 카메라 위쪽 방향
-
-
 		//1인칭
 		glViewport(0, 0, width, height);
 		glm::vec3 cameraPos_1;
@@ -543,16 +554,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
 		drawObj();
 
-		////미니맵
-		glViewport(width * 3 / 4, height * 3 / 4, width / 4, height / 4);
-		view = glm::mat4(1.0f);
-		glm::vec3 map_pos = glm::vec3(0.0, 65.0, 0); //--- 카메라 위치
-		glm::vec3 mapDir = glm::vec3(0.0, 0.0f, 0.0f); //--- 카메라 바라보는 방향
-		glm::vec3 mapUp = glm::vec3(0.0f, 0.0f, -1.0f); //--- 카메라 위쪽 방향
-		view = glm::lookAt(map_pos, mapDir, mapUp);
-		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
-
-
+		
 		//-------------------------------------------------------------------------------------------------------------------------------
 		//투영변환
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -569,6 +571,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		glm::vec3 temp_position = glm::vec3(1.0);
 		sphere_position = spheres_pos * glm::vec4(temp_position, 1.0);
 
+
 		item_colliCHK();
 
 		//-------------------------------------------------------------------------------------------------
@@ -580,13 +583,14 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 //애니메이션
 void Timer(int Value) {
 
+	
 
 	//포탄 
-	if (sphere[k].launch) {
-		sphere[k].sphere_z -= 1.0;
-		if (sphere[k].sphere_z <= -15.0f) {
+	if (sphere_[k].launch) {
+		sphere_[k].sphere_z -= 1.0;
+		if (sphere_[k].sphere_z <= -15.0f) {
 			k++;
-			sphere[k].launch = false;
+			sphere_[k].launch = false;
 		}
 	}
 
@@ -597,17 +601,21 @@ void Timer(int Value) {
 			collide_god = false;
 		}
 	}
+	//얼리기 타이머
+	if (collide_ice) {
+		time_ice += 1;
+		if (time_god == 1000) {
+			chaseOn = true;
+			collide_ice = false;
+		}
+	}
+
+
 	glutTimerFunc(30, Timer, 1);
 	glutPostRedisplay();
 
 }
 
-void Timer_1sec(int value) {
-	
-
-	glutTimerFunc(2000, Timer_1sec, 1);
-	glutPostRedisplay();
-}
 
 
 float speed = 0.3;
@@ -632,6 +640,28 @@ void Keyboard(unsigned char key, int x, int y)
 		else Player.x += 0.3;
 		break;
 
+	case 'W':
+		if (mov_coliiCHK()) Player.z += 0.3;
+		else Player.z -= 0.3;
+		break;
+	case 'A':
+		if (mov_coliiCHK()) Player.x += 0.3;
+		else Player.x -= 0.3;
+		break;
+	case 'S':
+		if (mov_coliiCHK()) Player.z -= 0.3;
+		else Player.z += 0.3; break;
+	case 'D':
+		if (mov_coliiCHK()) Player.x -= 0.3;
+		else Player.x += 0.3;
+		break;
+
+		//좀비 따라옴 멈춤
+	case 'c':
+		if (chaseOn) chaseOn = false;
+		else chaseOn = true;
+		break;
+
 
 		//게임 시작
 	case '1':
@@ -643,7 +673,9 @@ void Keyboard(unsigned char key, int x, int y)
 	case 'q':
 		glutLeaveMainLoop();
 		break;
-
+	case 'Q':
+		glutLeaveMainLoop();
+		break;
 	}
 
 
@@ -690,6 +722,9 @@ bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU,
 		return true;
 	return false;
 }
+
+
+
 
 
 
@@ -740,6 +775,7 @@ void item_colliCHK() {
 	}
 
 
+	
 
 }
 
@@ -787,8 +823,8 @@ void Mouse(int button, int state, int x, int y)
 {
 	//포탄 발사
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		sphere[k].now_yaw = yaw;
-		sphere[k].launch = true;
+		sphere_[k].now_yaw = yaw;
+		sphere_[k].launch = true;
 		PlaySound(TEXT("gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
 	}
 
@@ -843,6 +879,8 @@ void Motion(int xpos, int ypos) {
 
 	glutPostRedisplay();
 }
+
+
 
 
 
@@ -957,7 +995,7 @@ void get_Block() {
 				unsigned int blockColor = glGetUniformLocation(shaderProgram, "objectColor");
 				glUniform3f(blockColor, Block[i][j].b_color.r, Block[i][j].b_color.g, Block[i][j].b_color.b);
 
-				glDrawArrays(GL_TRIANGLES, 0, underbody_vertices[2].size());
+				glDrawArrays(GL_TRIANGLES, 0, block.m_vertices.size());
 			}
 
 
