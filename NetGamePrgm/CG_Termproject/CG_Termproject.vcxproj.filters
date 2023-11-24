@@ -13,27 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="소스 파일\CMesh">
-      <UniqueIdentifier>{12538105-f909-4221-b8a3-d48499c7c830}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\CTexture">
-      <UniqueIdentifier>{1f237425-ef03-448c-a739-ca609b61d73b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\CCamera">
-      <UniqueIdentifier>{2cba13d3-b2d3-4676-809f-5ff6bd30e48c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\CObject">
-      <UniqueIdentifier>{ca1b6476-c213-402e-97e8-a977beb1ce0d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\CPlayer">
-      <UniqueIdentifier>{7154045d-0b40-4476-8de3-580826cd0202}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\CShader">
-      <UniqueIdentifier>{e5a9c6e8-f368-4887-a3cb-2c800995bb8a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Socket">
-      <UniqueIdentifier>{9e23b3f4-8160-4f5a-a5b9-3efd2968fff2}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertex.glsl">
@@ -42,65 +21,20 @@
     <None Include="fragment.glsl">
       <Filter>소스 파일</Filter>
     </None>
-    <None Include="t_fragment.glsl">
-      <Filter>소스 파일</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="CMesh.cpp">
-      <Filter>소스 파일\CMesh</Filter>
-    </ClCompile>
-    <ClCompile Include="CTexture.cpp">
-      <Filter>소스 파일\CTexture</Filter>
-    </ClCompile>
-    <ClCompile Include="CCamera.cpp">
-      <Filter>소스 파일\CCamera</Filter>
-    </ClCompile>
-    <ClCompile Include="CObject.cpp">
-      <Filter>소스 파일\CObject</Filter>
-    </ClCompile>
-    <ClCompile Include="CPlayer.cpp">
-      <Filter>소스 파일\CPlayer</Filter>
-    </ClCompile>
-    <ClCompile Include="CShader.cpp">
-      <Filter>소스 파일\CShader</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkMgr.cpp">
-      <Filter>소스 파일\Socket</Filter>
+    <ClCompile Include="objReader.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="std.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="stb_image.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="CMesh.h">
-      <Filter>소스 파일\CMesh</Filter>
-    </ClInclude>
-    <ClInclude Include="CTexture.h">
-      <Filter>소스 파일\CTexture</Filter>
-    </ClInclude>
-    <ClInclude Include="CCamera.h">
-      <Filter>소스 파일\CCamera</Filter>
-    </ClInclude>
-    <ClInclude Include="CObject.h">
-      <Filter>소스 파일\CObject</Filter>
-    </ClInclude>
-    <ClInclude Include="CPlayer.h">
-      <Filter>소스 파일\CPlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="CShader.h">
-      <Filter>소스 파일\CShader</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkMgr.h">
-      <Filter>소스 파일\Socket</Filter>
-    </ClInclude>
-    <ClInclude Include="protocol.h">
+    <ClInclude Include="objReader.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

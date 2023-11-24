@@ -1,0 +1,4 @@
+﻿  objReader.cpp
+C:\Users\jinsu\Desktop\CG_Termproject_\CG_Termproject_\CG_Termproject\std.h(8,10): fatal  error C1083: 포함 파일을 열 수 없습니다. 'glm/glm/glm.hpp': No such file or directory
+  main.cpp
+C:\Users\jinsu\Desktop\CG_Termproject_\CG_Termproject_\CG_Termproject\std.h(8,10): fatal  error C1083: 포함 파일을 열 수 없습니다. 'glm/glm/glm.hpp': No such file or directory

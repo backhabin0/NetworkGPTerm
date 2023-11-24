@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{0397d2c6-091f-444d-9202-6d30bc31d325}</ProjectGuid>
     <RootNamespace>CGTermproject</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -144,29 +144,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="fragment.glsl" />
-    <None Include="t_fragment.glsl" />
     <None Include="vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CCamera.cpp" />
-    <ClCompile Include="CMesh.cpp" />
-    <ClCompile Include="CObject.cpp" />
-    <ClCompile Include="CPlayer.cpp" />
-    <ClCompile Include="CShader.cpp" />
-    <ClCompile Include="CTexture.cpp" />
+    <ClCompile Include="objReader.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="NetworkMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CCamera.h" />
-    <ClInclude Include="CMesh.h" />
-    <ClInclude Include="CObject.h" />
-    <ClInclude Include="CPlayer.h" />
-    <ClInclude Include="CShader.h" />
-    <ClInclude Include="CTexture.h" />
-    <ClInclude Include="NetworkMgr.h" />
-    <ClInclude Include="protocol.h" />
-    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="objReader.h" />
     <ClInclude Include="std.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
