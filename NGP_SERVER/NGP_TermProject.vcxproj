@@ -131,11 +131,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Collision.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="Session.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Collision.cpp" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="ServerMain.cpp" />
     <ClCompile Include="Session.cpp" />

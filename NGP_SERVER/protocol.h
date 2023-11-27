@@ -32,6 +32,7 @@ constexpr char CS_MOVE = 2;
 constexpr char CS_ATTACK = 3;
 constexpr char CS_ITEM = 4;
 constexpr char CS_LOGOUT = 5;
+constexpr char CS_YAW = 6;
 
 constexpr char SC_LOGIN_INFO = 0;
 constexpr char SC_LOGIN_OK = 1;
@@ -45,12 +46,13 @@ constexpr char SC_LOGOUT = 8;
 constexpr char SC_GAMESTART = 9;
 constexpr char SC_PLAYING_TIME = 10;
 constexpr char SC_UPDATE = 11;
+constexpr char SC_SET_ITEM = 12;
+constexpr char SC_ALL_ITEM_SET = 13;
 
 #pragma pack(push,1)
 
 struct CS_LOGIN_PACKET {
 	char type;
-	int id;
 	char name[NAME_SIZE];
 };
 
@@ -73,6 +75,11 @@ struct CS_LOGOUT_PACKET {
 	char tpye;
 };
 
+struct CS_YAW_PACKET {
+	char type;
+	float yaw;
+};
+
 struct SC_LOGIN_INFO_PACKET {
 	char type;
 	int id;
@@ -85,11 +92,13 @@ struct SC_LOGIN_INFO_PACKET {
 struct SC_LOGIN_OK_PACKET {
 	char type;
 	char name[NAME_SIZE];
+	int id;
 };
 
 struct SC_READY_OK_PACKET {
 	char type;
 	char name[NAME_SIZE];
+
 };
 struct SC_LOGINFAIL_PACKET {
 	char type;
@@ -105,6 +114,9 @@ struct SC_DIE_PACKET {
 	char type;
 };
 
+struct SC_GAMESTART_PACKET {
+	char tpye;
+};
 struct SC_STATE_CHANGE_PACKET {
 	char type;
 	int id;
@@ -120,6 +132,20 @@ struct SC_UPDATE_PACKET {
 	float z;
 	float speed;
 	short bullet_cnt;
+	float yaw;
 };
+
+struct SC_SET_ITEM_PACKET {
+	char type;
+	char item_type;
+	bool exist[3];
+	float x[3];
+	float z[3];
+};
+
+struct SC_ALL_ITEM_SET_PACKET {
+	char type;
+};
+
 
 #pragma pack (pop)

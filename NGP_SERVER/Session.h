@@ -22,10 +22,12 @@ private:
 	short m_hp;		//탱크 체력
 	float m_speed;	//탱크 속도	
 	bool m_online;	// 유저 접속 여부
+	bool m_ready;
 	short m_bullet_cnt;	//탱크 총알 수
 	bool m_accept_player;	// 유저 수용 여부
-	bool m_ready_player;	// 
-	
+	bool m_ready_player = false;	// 
+	float m_yaw;
+
 public:
 
 	Session();
@@ -43,6 +45,7 @@ public:
 	void setBulletCnt(short bullet_cnt);
 	void SetAcceptPlayer(bool accept_player);
 	void SetReadyPlayer(bool ready_player);
+	void setYaw(float yaw);
 
 	SOCKET GetSocket() const;
 	SocketInfo* GetSocketInfo() const;
@@ -57,4 +60,8 @@ public:
 	short GetBulletCnt() const;
 	bool GetAcceptPlayer() const;
 	bool GetReadyPlayer() const;
+	float GetYaw() const;
+
+	bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB);
+	bool mov_coliiCHK(float x, float y, float z);
 };
