@@ -12,6 +12,7 @@ Session::Session()
 	m_bullet_cnt = 0;
 	m_accept_player = false;
 	m_ready_player = false;
+	m_collision = false;
 }
 
 Session::~Session()

@@ -630,7 +630,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	glEnable(GL_DEPTH_TEST);
 	glUseProgram(shaderProgram);
 
-	if (start) {
+	if (!start) {
 		glViewport(0, 0, width, height);
 		start_page();
 		drawObj();
@@ -846,9 +846,6 @@ bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU,
 		return true;
 	return false;
 }
-
-
-
 
 
 
@@ -1078,6 +1075,8 @@ void get_Block() {
 
 
 }
+
+
 
 //==콜백 함수==========================================================================================
 
