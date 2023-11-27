@@ -75,7 +75,7 @@ struct Player_tank {
 	float speed;
 	short bullet_cnt;
 
-	float yaw;	
+	float yaw;
 	bool inGame = false;
 }Player;
 
@@ -85,8 +85,8 @@ float rotate_bigY = 180; // 객체 자전
 
 //----------------------------------------------------------------------------------------------------------
 // 블록/맵
-GLint mapobject = loadOBJ("cube.obj", map.m_vertices,map.m_uvs,map.m_normals);
-GLint blockobject = loadOBJ("cube.obj", block.m_vertices,block.m_uvs,block.m_normals);
+GLint mapobject = loadOBJ("cube.obj", map.m_vertices, map.m_uvs, map.m_normals);
+GLint blockobject = loadOBJ("cube.obj", block.m_vertices, block.m_uvs, block.m_normals);
 
 
 // 장애물
@@ -143,7 +143,7 @@ float lastX, lastY;
 //------------------------------------------------------------------------------------------------------
 //포탄 
 
-GLint sphere_object = loadOBJ("sphere.obj", sphere.m_vertices,sphere.m_uvs,sphere.m_normals);
+GLint sphere_object = loadOBJ("sphere.obj", sphere.m_vertices, sphere.m_uvs, sphere.m_normals);
 
 int k = 0; //포탄 넘버
 
@@ -158,7 +158,7 @@ glm::mat4 spheres_pos;
 glm::vec4 sphere_position; //포탄의 위치 (충돌처리용)
 
 
-GLint itemobject = loadOBJ("cube.obj", item.m_vertices,item.m_uvs,item.m_normals);
+GLint itemobject = loadOBJ("cube.obj", item.m_vertices, item.m_uvs, item.m_normals);
 
 
 struct Heart {
@@ -212,42 +212,47 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 		switch (buf[0]) {
 		case SC_LOGIN_OK: {
 			SC_LOGIN_OK_PACKET* packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(buf);
-			EnterCriticalSection(&cs);
 			if (g_loginOk == false) {
 				g_myid = packet->id;
 				g_loginOk = true;
 			}
-			LeaveCriticalSection(&cs);
-			std::cout << "[플레이어입장]  " << packet->name << "님이 입장하였습니다." << std::endl;
+			//std::cout << "[플레이어입장]  " << packet->name << "님이 입장하였습니다." << std::endl;
+			g_players[g_myid].hp = packet->hp;
+			g_players[g_myid].bullet_cnt = packet->bullet_cnt;
+			g_players[g_myid].speed = packet->speed;
+
+			cout <<  "체력 - " << g_players[g_myid].hp << endl;
+			cout <<  "총알 수 - " << g_players[g_myid].bullet_cnt << endl;
+			cout <<  "스피드 - " << g_players[g_myid].speed << endl;
 		}
 						break;
 		case SC_READY_OK: {
 			SC_READY_OK_PACKET* packet = reinterpret_cast<SC_READY_OK_PACKET*>(buf);
-			std::cout << "[플레이어레디]  " << packet->name << "님이 레디하였습니다." << std::endl;
+			//std::cout << "[플레이어레디]  " << packet->name << "님이 레디하였습니다." << std::endl;
 		}
 						break;
 		case SC_UPDATE: {	//여기는 초당 30프레임으로 계속 수신받는 월드업데이트 패킷이야
 			SC_UPDATE_PACKET* packet = reinterpret_cast<SC_UPDATE_PACKET*>(buf);
 			for (int i = 0; i < MAX_USER; ++i) {
 				if (g_myid == packet->id) {
-				//	g_players[packet->id].hp = packet->hp;
+					g_players[packet->id].hp = packet->hp;
 					g_players[packet->id].x = packet->x;
 					g_players[packet->id].y = packet->y;
 					g_players[packet->id].z = packet->z;
-				//	g_players[packet->id].speed = packet->speed;
+					g_players[packet->id].speed = packet->speed;
 					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 					g_players[packet->id].yaw = packet->yaw;
-					std::cout << packet->id << "번 클라 업데이트" << std::endl;
+					std::cout << packet->id << "번 남은 총알 수 : " << packet->bullet_cnt << std::endl;
 				}
 				else {
-				//	g_players[packet->id].hp = packet->hp;
+					g_players[packet->id].hp = packet->hp;
 					g_players[packet->id].x = packet->x;
 					g_players[packet->id].y = packet->y;
 					g_players[packet->id].z = packet->z;
-					//	g_players[packet->id].speed = packet->speed;
+					g_players[packet->id].speed = packet->speed;
 					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 					g_players[packet->id].yaw = packet->yaw;
-					std::cout << packet->id << "번 클라 업데이트" << std::endl;
+					std::cout << packet->id << "번 남은 총알 수 : " << packet->bullet_cnt << std::endl;
 				}
 			}
 		}
@@ -370,14 +375,14 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_mapPos[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[0]);
-	glBufferData((GL_ARRAY_BUFFER),tankbody.m_vertices.size()* sizeof(glm::vec3), &tankbody.m_vertices[0], GL_STATIC_DRAW);
+	glBufferData((GL_ARRAY_BUFFER), tankbody.m_vertices.size() * sizeof(glm::vec3), &tankbody.m_vertices[0], GL_STATIC_DRAW);
 	GLint pAttribute = glGetAttribLocation(shaderProgram, "aPos");
 	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(pAttribute);
 
 	glGenBuffers(1, &VBO_mapnormal[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[0]);
-	glBufferData(GL_ARRAY_BUFFER,tankbody.m_normals.size()* sizeof(glm::vec3), &tankbody.m_normals[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tankbody.m_normals.size() * sizeof(glm::vec3), &tankbody.m_normals[0], GL_STATIC_DRAW);
 	GLint nAttribute = glGetAttribLocation(shaderProgram, "aNormal");
 	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(nAttribute);
@@ -391,13 +396,13 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_mapPos[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[1]);
-	glBufferData((GL_ARRAY_BUFFER),map.m_vertices.size() * sizeof(glm::vec3), &map.m_vertices[0], GL_STATIC_DRAW);
+	glBufferData((GL_ARRAY_BUFFER), map.m_vertices.size() * sizeof(glm::vec3), &map.m_vertices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 
 	glGenBuffers(1, &VBO_mapnormal[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[1]);
-	glBufferData(GL_ARRAY_BUFFER,map.m_normals.size() * sizeof(glm::vec3), &map.m_normals[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, map.m_normals.size() * sizeof(glm::vec3), &map.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
 
@@ -408,16 +413,16 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_mapPos[2]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[2]);
-	glBufferData((GL_ARRAY_BUFFER),block.m_vertices.size()* sizeof(glm::vec3), &block.m_vertices[0], GL_STATIC_DRAW);
+	glBufferData((GL_ARRAY_BUFFER), block.m_vertices.size() * sizeof(glm::vec3), &block.m_vertices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 
 	glGenBuffers(1, &VBO_mapnormal[2]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[2]);
-	glBufferData(GL_ARRAY_BUFFER,tankbody.m_normals.size() * sizeof(glm::vec3), &tankbody.m_normals[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tankbody.m_normals.size() * sizeof(glm::vec3), &tankbody.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
-	
+
 	//-------------------------------------------------------------------------------------------------------------------------------
 	//포탄
 	glGenVertexArrays(1, &VAO_sphere);
@@ -431,7 +436,7 @@ GLvoid InitBuffer() {
 
 	glGenBuffers(1, &VBO_spherenormal);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_spherenormal);
-	glBufferData(GL_ARRAY_BUFFER,sphere.m_normals.size() * sizeof(glm::vec3), &sphere.m_normals[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sphere.m_normals.size() * sizeof(glm::vec3), &sphere.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(nAttribute);
 
@@ -494,13 +499,13 @@ void start_page() {
 	projection = glm::translate(projection, glm::vec3(0.0, 0.0, -3.0));//--- 공간을 약간 뒤로 미뤄줌
 	unsigned int projectionLocation = glGetUniformLocation(shaderProgram, "projectionTransform"); //--- 투영 변환 값 설정
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
-	
+
 
 
 }
 
 
- 
+
 GLvoid drawObj() {
 
 	for (int index = 0; index < MAX_USER; ++index) {
@@ -648,10 +653,10 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		cameraPos.z = g_players[g_myid].z;
 		cameraPos.y = CamPos.y; //카메라를 위쪽(y축)으로 조정
 		cameraUp = glm::vec3(0.0, 0.0, -1.0);
-		
+
 		cameraUp = glm::vec3(0.0, 1.0, 0.0);
 
-		
+
 		//1인칭
 		glViewport(0, 0, width, height);
 		glm::vec3 cameraPos_1;
@@ -675,7 +680,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
 		drawObj();
 
-		
+
 		//-------------------------------------------------------------------------------------------------------------------------------
 		//투영변환
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -704,7 +709,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 //애니메이션
 void Timer(int Value) {
 
-	
+
 
 	//포탄 
 	if (sphere_[k].launch) {
@@ -889,14 +894,19 @@ void item_colliCHK() {
 void Mouse(int button, int state, int x, int y)
 {
 	//포탄 발사
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		sphere_[k].now_yaw = yaw;
-		sphere_[k].launch = true;
-		PlaySound(TEXT("gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
+	if (g_setItem) {
+		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			if (g_players[g_myid].bullet_cnt > 0) {
+				sphere_[k].now_yaw = yaw;
+				sphere_[k].launch = true;
+				PlaySound(TEXT("gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
-		CS_ATTACK_PACKET* packet = new CS_ATTACK_PACKET;
-		packet->tpye = CS_ATTACK;
-		 
+				CS_ATTACK_PACKET* packet = new CS_ATTACK_PACKET;
+				packet->tpye = CS_ATTACK;
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof CS_ATTACK_PACKET);
+				delete packet;
+			}
+		}
 	}
 
 	//카메라 변경
@@ -935,6 +945,7 @@ void Motion(int xpos, int ypos) {
 	packet->type = CS_YAW;
 	packet->yaw = yaw;
 	networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_YAW_PACKET));
+	delete packet;
 
 	pitch += yoffset;
 

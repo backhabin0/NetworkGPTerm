@@ -5,7 +5,7 @@
 #define HP 100
 #define X 10
 #define Y 10
-#define SPEED 10
+#define SPEED 0.3
 #define BULLET_CNT 10
 
 struct SocketInfo {

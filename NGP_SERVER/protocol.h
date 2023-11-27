@@ -93,6 +93,12 @@ struct SC_LOGIN_OK_PACKET {
 	char type;
 	char name[NAME_SIZE];
 	int id;
+	int hp;
+	float x;
+	float y;
+	float z;
+	float speed;
+	short bullet_cnt;
 };
 
 struct SC_READY_OK_PACKET {
