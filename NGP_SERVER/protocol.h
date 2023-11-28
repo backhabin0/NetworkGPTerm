@@ -69,6 +69,8 @@ struct CS_MOVE_PACKET {
 struct CS_ITEM_PACKET {
 	char type;
 	char item;
+	bool exist;
+	int num;
 };
 
 struct CS_LOGOUT_PACKET {

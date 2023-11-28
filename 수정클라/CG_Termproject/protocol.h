@@ -71,6 +71,8 @@ struct CS_ATTACK_PACKET {
 struct CS_ITEM_PACKET {
 	char type;
 	char item;
+	bool exist;
+	int num;
 };
 
 struct CS_LOGOUT_PACKET {
@@ -81,6 +83,7 @@ struct CS_YAW_PACKET {
 	char type;
 	float yaw;
 };
+
 struct SC_LOGIN_INFO_PACKET {
 	char type;
 	int id;

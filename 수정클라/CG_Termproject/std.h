@@ -10,9 +10,9 @@
 //#include <glm/glm/gtc/matrix_transform.hpp>
 
 //사용하실 때 제꺼 주석 처리해주세용
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <gl/glm/glm.hpp>
+#include <gl/glm/ext.hpp>
+#include <gl/glm/gtc/matrix_transform.hpp>
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -20,4 +20,3 @@ struct Map_Block
 static Map_Block Block[30][30];
 
 void Setup_Block();
-
