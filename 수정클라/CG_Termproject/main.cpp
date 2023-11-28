@@ -165,7 +165,7 @@ struct Heart {
 	float z = 0.0;
 };
 
-struct Wheel {
+struct SpeedUP {
 	bool exist = true;
 	float x = 5.0;
 	float z = 0.0;
@@ -178,15 +178,10 @@ struct ICE {
 };
 
 struct Heart heart[3];
-struct Wheel wheel[3];
+struct SpeedUP speedup[3];
 
 struct ICE ice[3];
 
-
-
-//일정시간만 아이템 유지
-int time_god = 0;
-bool collide_god = false;
 int time_ice = 0;
 bool collide_ice = false;
 
@@ -263,9 +258,9 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			}
 			else if (packet->item_type == SPEEDUP) {
 				for (int i = 0; i < 3; ++i) {
-					wheel[i].exist = packet->exist[i];
-					wheel[i].x = packet->x[i];
-					wheel[i].z = packet->z[i];
+					speedup[i].exist = packet->exist[i];
+					speedup[i].x = packet->x[i];
+					speedup[i].z = packet->z[i];
 				}
 			}
 			else if (packet->item_type == FREEZE) {
@@ -588,9 +583,9 @@ GLvoid drawObj() {
 			}
 			//속도 증가
 			for (int i = 0; i < 3; i++) {
-				if (wheel[i].exist) {
+				if (speedup[i].exist) {
 					glm::mat4 velocity = glm::mat4(1.0);
-					velocity = glm::translate(velocity, glm::vec3(wheel[i].x, 0, wheel[i].z));
+					velocity = glm::translate(velocity, glm::vec3(speedup[i].x, 0, speedup[i].z));
 					velocity = glm::scale(velocity, glm::vec3(0.2, 0.2, 0.2));
 					glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(velocity));
 					glBindVertexArray(VAO_item[0]);
@@ -705,23 +700,6 @@ void Timer(int Value) {
 		if (sphere_[k].sphere_z <= -15.0f) {
 			k++;
 			sphere_[k].launch = false;
-		}
-	}
-
-	//무적시간 타이머
-	if (collide_god) {
-		time_god += 1;
-		if (time_god == 1000) {
-			collide_god = false;
-		}
-	}
-
-	//얼리기 타이머
-	if (collide_ice) {
-		time_ice += 1;
-		if (time_god == 1000) {
-			chaseOn = true;
-			collide_ice = false;
 		}
 	}
 
@@ -845,7 +823,7 @@ void item_colliCHK() {
 	{
 		if (heart[i].exist)
 		{
-			cout << "플레이어" << g_players[g_myid].x << "아이템" <<heart[i].x << endl;
+			//cout << "플레이어" << g_players[g_myid].x << "아이템" <<heart[i].x << endl;
 	
 			if (collision_Chk(heart[i].x - 0.3, heart[i].x + 0.3, heart[i].z - 0.3, heart[i].z + 0.3,
 				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
@@ -853,7 +831,6 @@ void item_colliCHK() {
 				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
 				heart[i].exist = false;
 				Player.hp += 30;
-
 
 				CS_ITEM_PACKET* packet = new CS_ITEM_PACKET;
 				packet->type = CS_ITEM;
@@ -868,14 +845,42 @@ void item_colliCHK() {
 	//속도 증가
 	for (int i = 0; i < 3; i++)
 	{
-		if (wheel[i].exist)
+		if (speedup[i].exist)
 		{
-			if (collision_Chk(wheel[i].x - 0.3, wheel[i].x + 0.3, wheel[i].z - 0.3, wheel[i].z + 0.3,
-				Player.x - 0.3, Player.x + 0.3, Player.z - 0.3, Player.z + 0.3))
+			if (collision_Chk(speedup[i].x - 0.3, speedup[i].x + 0.3, speedup[i].z - 0.3, speedup[i].z + 0.3,
+				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
 			{
 				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
-				wheel[i].exist = false;
+				speedup[i].exist = false;
 				speed = 0.7;
+
+				CS_ITEM_PACKET* packet = new CS_ITEM_PACKET;
+				packet->type = CS_ITEM;
+				packet->item = SPEEDUP;
+				packet->num = i;
+				packet->exist = false;
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_ITEM_PACKET));
+			}
+		}
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (ice[i].exist)
+		{
+			if (collision_Chk(ice[i].x - 0.3, ice[i].x + 0.3, ice[i].z - 0.3, ice[i].z + 0.3,
+				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
+			{
+				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
+				ice[i].exist = false;
+				speed = 0.7;
+
+				CS_ITEM_PACKET* packet = new CS_ITEM_PACKET;
+				packet->type = CS_ITEM;
+				packet->item = FREEZE;
+				packet->num = i;
+				packet->exist = false;
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_ITEM_PACKET));
 			}
 		}
 	}

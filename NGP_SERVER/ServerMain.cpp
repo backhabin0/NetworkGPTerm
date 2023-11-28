@@ -433,8 +433,44 @@ DWORD WINAPI ClientThread(LPVOID socket)
 					  break;
 		case CS_ITEM: {
 			CS_ITEM_PACKET* cspacket = reinterpret_cast<CS_ITEM_PACKET*>(p);
-			heart[cspacket->num].exist = false;
-			std::cout << "충돌 정보 오는 중임?" << std::endl;
+			
+			if (cspacket->item == HEAL)		heart[cspacket->num].exist = false;
+			if (cspacket->item == SPEEDUP)	wheel[cspacket->num].exist = false;
+			if (cspacket->item == FREEZE)	ice[cspacket->num].exist = false;
+			
+			SC_SET_ITEM_PACKET* packet = new SC_SET_ITEM_PACKET;
+			packet->type = SC_SET_ITEM;
+			int len = sizeof SC_SET_ITEM_PACKET;
+			packet->item_type = cspacket->item;
+			
+			for (int i = 0; i < 3; i++)
+			{
+				if (packet->item_type == HEAL)
+				{
+					packet->exist[i] = heart[i].exist;
+					packet->x[i] = heart[i].x;
+					packet->z[i] = heart[i].z;
+				}
+				else if (packet->item_type == SPEEDUP)
+				{
+					packet->exist[i] = wheel[i].exist;
+					packet->x[i] = wheel[i].x;
+					packet->z[i] = wheel[i].z;
+				}
+				else if (packet->item_type == FREEZE)
+				{
+					packet->exist[i] = ice[i].exist;
+					packet->x[i] = ice[i].x;
+					packet->z[i] = ice[i].z;
+				}
+			}
+
+			for (int i = 0; i < MAX_USER; i++)
+			{
+				send(g_players[i].GetSocket(), reinterpret_cast<char*>(&len), sizeof(int), 0);
+				send(g_players[i].GetSocket(), reinterpret_cast<char*>(packet), len, 0);
+			}
+			std::cout << "아이템 변경 값 보내줌" << std::endl;
 		}
 					break;
 		}
