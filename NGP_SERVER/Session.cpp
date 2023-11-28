@@ -51,6 +51,7 @@ void Session::SetReadyPlayer(bool ready_player) { m_ready_player = ready_player;
 
 void Session::setYaw(float yaw) { m_yaw = yaw; }
 
+
 SOCKET Session::GetSocket() const { return m_socketinfo->client_socket; }
 
 float Session::GetX() const{ return m_x; }
@@ -79,6 +80,7 @@ char* Session::GetName() const { return m_name; }
 bool Session::GetReadyPlayer() const { return m_ready_player; }
 
 float Session::GetYaw() const { return m_yaw; }
+
 
 
 bool Session::collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB)

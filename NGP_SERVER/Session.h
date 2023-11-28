@@ -2,11 +2,11 @@
 
 #include "protocol.h"
 
-#define HP 100
-#define X 10
-#define Y 10
-#define SPEED 0.3
-#define BULLET_CNT 10
+//#define HP 100
+//#define X 10
+//#define Y 10
+//#define SPEED 0.3
+//#define BULLET_CNT 10
 
 struct SocketInfo {
 	SOCKET client_socket;
@@ -27,7 +27,6 @@ private:
 	bool m_accept_player;	// 유저 수용 여부
 	bool m_ready_player=false;	// 
 	float m_yaw;
-	
 public:
 
 	Session();

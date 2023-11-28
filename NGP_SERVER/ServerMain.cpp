@@ -32,6 +32,16 @@ struct	Heart heart[3];
 struct	Wheel wheel[3];
 struct 	ICE ice[3];
 
+struct Sphere {
+	bool launch = false;
+	float sphere_z = 0;
+	float now_yaw = 0;
+	float x;
+	float z;
+};
+
+struct Sphere sphere[BULLET_CNT]; // 포탄의 갯수 
+
 float temp_x;
 float temp_z;
 
@@ -62,6 +72,7 @@ void item_setup()
 }
 
 std::array<Session, MAX_USER> g_players;
+int g_bullet_num;
 int g_ClientNum;
 bool g_AllPlayerReady = false;
 bool g_GameStart = false;
@@ -440,10 +451,89 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		}
 				   break;
 		case CS_ATTACK: {
-			g_players[socketinfo->id].setBulletCnt(g_players[socketinfo->id].GetBulletCnt() - 1);
+			CS_ATTACK_PACKET* cspacket = reinterpret_cast<CS_ATTACK_PACKET*>(p);
+			////////////////////////////////////////////////////////////////////
+			//이 구간은 클라로부터 받은 총알의 시작지점과 y값 발사bool값을 나타냄
+			{
+				std::lock_guard<std::mutex> lock(g_Recvmutex);
+				sphere[g_bullet_num].now_yaw = cspacket->now_yaw;
+				sphere[g_bullet_num].x = cspacket->x;
+				sphere[g_bullet_num].z = cspacket->z;
+				sphere[g_bullet_num].launch = cspacket->isshoot;
+			}
+
+			//std::cout << cspacket->now_yaw << std::endl;
+			//std::cout << cspacket->x << std::endl;
+			//std::cout << cspacket->z << std::endl;
+
+			////////////////////////////////////////////////////////////////////
+			g_players[socketinfo->id].setBulletCnt(g_players[socketinfo->id].GetBulletCnt() - 1);	//한발씩 감소
 			std::cout << socketinfo->id << "번 클라이언트 포탄 발사!! 남은 총알 : " << g_players[socketinfo->id].GetBulletCnt() << std::endl;
+
+			SC_ATTACK_PACKET* scpacket = new SC_ATTACK_PACKET;
+			scpacket->type = SC_ATTACK;
+			scpacket->id = socketinfo->id;
+			scpacket->now_yaw = cspacket->now_yaw;
+			scpacket->x = cspacket->x;
+			scpacket->z = cspacket->z;
+			scpacket->isshoot = true;
+
+			//std::cout << scpacket->id << std::endl;
+			//std::cout << scpacket->now_yaw << std::endl;
+			//std::cout << scpacket->x << std::endl;
+			//std::cout << scpacket->z << std::endl;
+
+			int len = sizeof SC_ATTACK_PACKET;
+			{
+				std::lock_guard<std::mutex> lock(g_Recvmutex);
+				for (int i = 0; i < MAX_USER; ++i) {
+					if (g_players[i].GetOnline()) {
+						//EnterCriticalSection(&g_cs);
+						send(g_players[i].GetSocket(), reinterpret_cast<char*>(&len), sizeof(int), 0);
+						send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), len, 0);
+						//LeaveCriticalSection(&g_cs);
+					}
+				}
+			}
+			delete scpacket;
 		}
 					  break;
+		case CS_ATTACK_END: {
+			CS_ATTACK_END_PACKET* cspacket = reinterpret_cast<CS_ATTACK_END_PACKET*>(buf);
+			{
+				std::lock_guard<std::mutex> lock(g_Recvmutex);
+				sphere[g_bullet_num].now_yaw = cspacket->now_yaw;
+				sphere[g_bullet_num].x = cspacket->x;
+				sphere[g_bullet_num].z = cspacket->z;
+				sphere[g_bullet_num].launch = cspacket->isshoot;
+				std::cout << g_bullet_num << "번째 총알 발사 종료" << std::endl;
+				++g_bullet_num;
+				if (g_bullet_num == 9)
+					g_bullet_num = 0;
+			}
+
+
+			SC_ATTACK_END_PACKET* scpacket = new SC_ATTACK_END_PACKET;
+			scpacket->type = SC_ATTACK_END;
+			scpacket->id = socketinfo->id;
+			scpacket->isshoot = false;
+
+			int len = sizeof SC_ATTACK_END_PACKET;
+
+			{
+				std::lock_guard<std::mutex> lock(g_Recvmutex);
+				for (int i = 0; i < MAX_USER; ++i) {
+					if (g_players[i].GetOnline()) {
+						//EnterCriticalSection(&g_cs);
+						send(g_players[i].GetSocket(), reinterpret_cast<char*>(&len), sizeof(int), 0);
+						send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), len, 0);
+						//LeaveCriticalSection(&g_cs);
+					}
+				}
+			}
+			delete scpacket;
+		}
+						  break;
 		}
 		//버퍼,길이 초기화
 		memset(buf, 0, sizeof(buf));

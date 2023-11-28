@@ -15,6 +15,12 @@
 #include <array>
 #include <iostream>
 
+#define HP 100
+#define X 10
+#define Y 10
+#define SPEED 0.3
+#define BULLET_CNT 10
+
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
@@ -34,6 +40,7 @@ constexpr char CS_ATTACK = 3;
 constexpr char CS_ITEM = 4;
 constexpr char CS_LOGOUT = 5;
 constexpr char CS_YAW = 6;
+constexpr char CS_ATTACK_END = 7;
 
 constexpr char SC_LOGIN_INFO = 0;
 constexpr char SC_LOGIN_OK = 1;
@@ -49,6 +56,7 @@ constexpr char SC_PLAYING_TIME = 10;
 constexpr char SC_UPDATE = 11;
 constexpr char SC_SET_ITEM = 12;
 constexpr char SC_ALL_ITEM_SET = 13;
+constexpr char SC_ATTACK_END = 14;
 
 #pragma pack(push,1)
 
@@ -67,7 +75,20 @@ struct CS_MOVE_PACKET {
 
 struct CS_ATTACK_PACKET {
 	char tpye;
+	float now_yaw;
+	float x;
+	float z;
+	bool isshoot;
 };
+
+struct CS_ATTACK_END_PACKET {
+	char tpye;
+	float now_yaw;
+	float x;
+	float z;
+	bool isshoot;
+};
+
 struct CS_ITEM_PACKET {
 	char type;
 	char item;
@@ -125,6 +146,20 @@ struct SC_STATE_CHANGE_PACKET {
 	char state;
 };
 
+struct SC_ATTACK_PACKET {
+	char type;
+	int id;
+	float now_yaw;
+	float x;
+	float z;
+	bool isshoot;
+};
+
+struct SC_ATTACK_END_PACKET {
+	char type;
+	int id;
+	bool isshoot;
+};
 struct SC_READY_OK_PACKET {
 	char type;
 	char name[NAME_SIZE];
