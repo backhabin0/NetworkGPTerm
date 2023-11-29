@@ -158,7 +158,7 @@ struct Sphere_ {
 	float z;
 };
 
-struct Sphere_ sphere_[BULLET_CNT]; // 포탄의 갯수 
+struct Sphere_ sphere_[2]; // 포탄의 갯수 
 glm::mat4 spheres_pos;
 glm::vec4 sphere_position; //포탄의 위치 (충돌처리용)
 
@@ -311,12 +311,6 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			cout << packet->isshoot << endl;
 		}
 							 break;
-		case SC_ATTACK_END: {
-			SC_ATTACK_END_PACKET* packet = reinterpret_cast<SC_ATTACK_END_PACKET*>(buf);
-			g_attackid = packet->id;
-			sphere_[g_attackid].launch = packet->isshoot;
-		}
-						  break;
 		}
 	}
 	return 0;
@@ -510,7 +504,8 @@ void start_page() {
 	glm::mat4 view = glm::mat4(1.0f);
 	cameraPos.x = 0.0; //카메라 위치를 탱크 위치로 고정
 	cameraPos.z = 0.0;
-	cameraPos.y = 65.0; //카메라를 위쪽(y축)으로 조정
+	//cameraPos.y = 65.0; //카메라를 위쪽(y축)으로 조정
+	cameraPos.y = 30.0; //카메라를 위쪽(y축)으로 조정
 
 	glm::vec3 Diretion = glm::vec3(0.0, 0.0, 0.0);
 	cameraUp = glm::vec3(0.0, 0.0, -1.0); //--- 카메라 위쪽 방향
@@ -596,7 +591,7 @@ GLvoid drawObj() {
 			glm::mat4 spheres_scale = glm::mat4(1.0);
 			spheres_pos = glm::mat4(1.0);
 			if (!(g_players[index].x == 0 && g_players[index].y == 0 && g_players[index].z == 0)) { //탱크의 위치가 원점이 아닌 경우 
-				spheres_pos = glm::translate(spheres_pos, glm::vec3(sphere_[index].x,0, sphere_[index].z)); //원점에서 회전 후 탱크의 이동으로 위치 변경 
+				spheres_pos = glm::translate(spheres_pos, glm::vec3(sphere_[index].x, 0, sphere_[index].z)); //원점에서 회전 후 탱크의 이동으로 위치 변경 
 			}
 			spheres_pos = glm::rotate(spheres_pos, glm::radians(sphere_[index].now_yaw), glm::vec3(0.0, 1.0, 0.0));
 			spheres_pos = glm::translate(spheres_pos, glm::vec3(0.0, 0.0, sphere_[index].sphere_zz));
@@ -738,22 +733,13 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 //====================================================================================================
 //애니메이션
 void Timer(int Value) {
-
+	
 	//포탄 
 	for (int i = 0; i < MAX_USER; ++i) {
 		if (sphere_[i].launch) {
 			sphere_[i].sphere_zz -= 1.0;
 			if (sphere_[i].sphere_zz == -15.0f) {
-				//k++;
-				//sphere_[i].launch = false;
-				CS_ATTACK_END_PACKET* packet = new CS_ATTACK_END_PACKET;
-				packet->tpye = CS_ATTACK_END;
-				packet->now_yaw = 0;
-				packet->x = 0;
-				packet->z = 0;
-				packet->isshoot = false;
-				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_ATTACK_END_PACKET));
-				delete packet;
+				sphere_[i].launch = false;
 				sphere_[i].sphere_zz = 0;
 			}
 		}

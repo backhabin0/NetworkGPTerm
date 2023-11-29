@@ -56,7 +56,6 @@ constexpr char SC_PLAYING_TIME = 10;
 constexpr char SC_UPDATE = 11;
 constexpr char SC_SET_ITEM = 12;
 constexpr char SC_ALL_ITEM_SET = 13;
-constexpr char SC_ATTACK_END = 14;
 
 #pragma pack(push,1)
 
@@ -155,11 +154,7 @@ struct SC_ATTACK_PACKET {
 	bool isshoot;
 };
 
-struct SC_ATTACK_END_PACKET {
-	char type;
-	int id;
-	bool isshoot;
-};
+
 struct SC_READY_OK_PACKET {
 	char type;
 	char name[NAME_SIZE];

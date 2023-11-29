@@ -460,6 +460,7 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				sphere[g_bullet_num].x = cspacket->x;
 				sphere[g_bullet_num].z = cspacket->z;
 				sphere[g_bullet_num].launch = cspacket->isshoot;
+				++g_bullet_num;
 			}
 
 			//std::cout << cspacket->now_yaw << std::endl;
@@ -498,42 +499,6 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			delete scpacket;
 		}
 					  break;
-		case CS_ATTACK_END: {
-			CS_ATTACK_END_PACKET* cspacket = reinterpret_cast<CS_ATTACK_END_PACKET*>(buf);
-			{
-				std::lock_guard<std::mutex> lock(g_Recvmutex);
-				sphere[g_bullet_num].now_yaw = cspacket->now_yaw;
-				sphere[g_bullet_num].x = cspacket->x;
-				sphere[g_bullet_num].z = cspacket->z;
-				sphere[g_bullet_num].launch = cspacket->isshoot;
-				std::cout << g_bullet_num << "번째 총알 발사 종료" << std::endl;
-				++g_bullet_num;
-				if (g_bullet_num == 9)
-					g_bullet_num = 0;
-			}
-
-
-			SC_ATTACK_END_PACKET* scpacket = new SC_ATTACK_END_PACKET;
-			scpacket->type = SC_ATTACK_END;
-			scpacket->id = socketinfo->id;
-			scpacket->isshoot = false;
-
-			int len = sizeof SC_ATTACK_END_PACKET;
-
-			{
-				std::lock_guard<std::mutex> lock(g_Recvmutex);
-				for (int i = 0; i < MAX_USER; ++i) {
-					if (g_players[i].GetOnline()) {
-						//EnterCriticalSection(&g_cs);
-						send(g_players[i].GetSocket(), reinterpret_cast<char*>(&len), sizeof(int), 0);
-						send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), len, 0);
-						//LeaveCriticalSection(&g_cs);
-					}
-				}
-			}
-			delete scpacket;
-		}
-						  break;
 		}
 		//버퍼,길이 초기화
 		memset(buf, 0, sizeof(buf));
