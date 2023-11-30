@@ -48,11 +48,14 @@ void start_page();
 //충돌체크
 bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB);
 
+
 bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU, float bL, float bR, float bT, float bB, float bD, float bU);
 void item_colliCHK();
 bool mov_coliiCHK();
+void bullet_colliCHK();
 void Setup_Block(); // 블럭 초기화
 void get_Block(); // 블록 출력
+
 
 //색상
 struct COLOR
@@ -78,6 +81,8 @@ struct Player_tank {
 }Player;
 
 Player_tank g_players[2];
+
+int g_attackid;
 
 float rotate_bigY = 180; // 객체 자전
 
@@ -148,10 +153,13 @@ int k = 0; //포탄 넘버
 struct Sphere_ {
 	bool launch = false;
 	float sphere_z = 0;
+	float sphere_zz = 0;
 	float now_yaw = 0;
+	float x;
+	float z;
 };
 
-struct Sphere_ sphere_[500]; // 포탄의 갯수 
+struct Sphere_ sphere_[2]; // 포탄의 갯수 
 glm::mat4 spheres_pos;
 glm::vec4 sphere_position; //포탄의 위치 (충돌처리용)
 
@@ -165,7 +173,7 @@ struct Heart {
 	float z = 0.0;
 };
 
-struct SpeedUP {
+struct Wheel {
 	bool exist = true;
 	float x = 5.0;
 	float z = 0.0;
@@ -178,21 +186,29 @@ struct ICE {
 };
 
 struct Heart heart[3];
-struct SpeedUP speedup[3];
+struct Wheel speedup[3];
 
 struct ICE ice[3];
 
+
+
+//일정시간만 아이템 유지
+int time_god = 0;
+bool collide_god = false;
 int time_ice = 0;
 bool collide_ice = false;
 
 //=======================================================================================================
 
 bool start = true;
+
 NetworkMgr networkmgr;
 int g_myid;
+int g_bullet_num;
 CRITICAL_SECTION cs;
 bool g_setItem = false;
 bool g_loginOk = false;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI RecvThread(LPVOID lpParam)
 {
@@ -205,42 +221,51 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 		switch (buf[0]) {
 		case SC_LOGIN_OK: {
 			SC_LOGIN_OK_PACKET* packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(buf);
-			EnterCriticalSection(&cs);
 			if (g_loginOk == false) {
 				g_myid = packet->id;
 				g_loginOk = true;
 			}
-			LeaveCriticalSection(&cs);
-			std::cout << "[플레이어입장]  " << packet->name << "님이 입장하였습니다." << std::endl;
+			//std::cout << "[플레이어입장]  " << packet->name << "님이 입장하였습니다." << std::endl;
+			g_players[g_myid].hp = packet->hp;
+			g_players[g_myid].bullet_cnt = packet->bullet_cnt;
+			g_players[g_myid].speed = packet->speed;
+
+			cout <<  "체력 - " << g_players[g_myid].hp << endl;
+			cout <<  "총알 수 - " << g_players[g_myid].bullet_cnt << endl;
+			cout <<  "스피드 - " << g_players[g_myid].speed << endl;
 		}
 						break;
 		case SC_READY_OK: {
 			SC_READY_OK_PACKET* packet = reinterpret_cast<SC_READY_OK_PACKET*>(buf);
-			std::cout << "[플레이어레디]  " << packet->name << "님이 레디하였습니다." << std::endl;
+			//std::cout << "[플레이어레디]  " << packet->name << "님이 레디하였습니다." << std::endl;
 		}
 						break;
 		case SC_UPDATE: {	//여기는 초당 30프레임으로 계속 수신받는 월드업데이트 패킷이야
 			SC_UPDATE_PACKET* packet = reinterpret_cast<SC_UPDATE_PACKET*>(buf);
 			for (int i = 0; i < MAX_USER; ++i) {
 				if (g_myid == packet->id) {
-					//	g_players[packet->id].hp = packet->hp;
+					g_players[packet->id].hp = packet->hp;
 					g_players[packet->id].x = packet->x;
 					g_players[packet->id].y = packet->y;
 					g_players[packet->id].z = packet->z;
-					//	g_players[packet->id].speed = packet->speed;
+					g_players[packet->id].speed = packet->speed;
 					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 					g_players[packet->id].yaw = packet->yaw;
-					//std::cout << packet->id << "번 클라 업데이트" << std::endl;
+					g_players[packet->id].id = packet->id;
+
+					//std::cout << packet->id << "번 남은 총알 수 : " << packet->bullet_cnt << std::endl;
 				}
 				else {
-					//	g_players[packet->id].hp = packet->hp;
+					g_players[packet->id].hp = packet->hp;
 					g_players[packet->id].x = packet->x;
 					g_players[packet->id].y = packet->y;
 					g_players[packet->id].z = packet->z;
-					//	g_players[packet->id].speed = packet->speed;
+					g_players[packet->id].speed = packet->speed;
 					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 					g_players[packet->id].yaw = packet->yaw;
-					//std::cout << packet->id << "번 클라 업데이트" << std::endl;
+					g_players[packet->id].id = packet->id;
+
+					//std::cout << packet->id << "번 남은 총알 수 : " << packet->bullet_cnt << std::endl;
 				}
 			}
 		}
@@ -277,6 +302,21 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			g_setItem = true;
 		}
 							break;
+		case SC_ATTACK: {
+			SC_ATTACK_PACKET* packet = reinterpret_cast<SC_ATTACK_PACKET*>(buf);
+			g_attackid = packet->id;
+			sphere_[g_attackid].now_yaw = packet->now_yaw;
+			sphere_[g_attackid].x = packet->x;
+			sphere_[g_attackid].z = packet->z;
+			sphere_[g_attackid].launch = packet->isshoot;
+
+			cout << packet->id << endl;
+			cout << packet->now_yaw << endl;
+			cout << packet->x << endl;
+			cout << packet->z << endl;
+			cout << packet->isshoot << endl;
+		}
+							 break;
 		}
 	}
 	return 0;
@@ -330,7 +370,6 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	glutMouseFunc(Mouse);//마우스 콜백
 	glutPassiveMotionFunc(Motion);//마우스 움직임
 	glutTimerFunc(30, Timer, 1); //애니매이션 타이머
-
 	//Recv쓰레드 생성 - 서버로부터 데이터 수신 계속 받을거얌
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	HANDLE hThread = CreateThread(NULL, 0, RecvThread, 0, 0, 0);
@@ -471,7 +510,8 @@ void start_page() {
 	glm::mat4 view = glm::mat4(1.0f);
 	cameraPos.x = 0.0; //카메라 위치를 탱크 위치로 고정
 	cameraPos.z = 0.0;
-	cameraPos.y = 65.0; //카메라를 위쪽(y축)으로 조정
+	//cameraPos.y = 65.0; //카메라를 위쪽(y축)으로 조정
+	cameraPos.y = 30.0; //카메라를 위쪽(y축)으로 조정
 
 	glm::vec3 Diretion = glm::vec3(0.0, 0.0, 0.0);
 	cameraUp = glm::vec3(0.0, 0.0, -1.0); //--- 카메라 위쪽 방향
@@ -489,21 +529,24 @@ void start_page() {
 	unsigned int projectionLocation = glGetUniformLocation(shaderProgram, "projectionTransform"); //--- 투영 변환 값 설정
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
 
+
+
 }
 
 
 
 GLvoid drawObj() {
-
+	int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+	unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 	for (int index = 0; index < MAX_USER; ++index) {
 		//탱크
 		glBindVertexArray(VAO_map[0]);
 		glm::mat4 model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(g_players[index].x, g_players[index].y, g_players[index].z));
 		model = glm::rotate(model, glm::radians(rotate_bigY), glm::vec3(0.0, 1.0, 0.0));
-		int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+		modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
 		glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
-		unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+		int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 		glUniform3f(objColorLocation, color[index].r, color[index].g, color[index].b);
 
 		//35931 (vertex number)
@@ -550,14 +593,14 @@ GLvoid drawObj() {
 
 		//--------------------------------------------------------------------------------------------------
 		//포탄
-		if (sphere_[k].launch) {
+		if (sphere_[index].launch) {
 			glm::mat4 spheres_scale = glm::mat4(1.0);
 			spheres_pos = glm::mat4(1.0);
 			if (!(g_players[index].x == 0 && g_players[index].y == 0 && g_players[index].z == 0)) { //탱크의 위치가 원점이 아닌 경우 
-				spheres_pos = glm::translate(spheres_pos, glm::vec3(g_players[index].x, g_players[index].y, g_players[index].z)); //원점에서 회전 후 탱크의 이동으로 위치 변경 
+				spheres_pos = glm::translate(spheres_pos, glm::vec3(sphere_[index].x, 0, sphere_[index].z)); //원점에서 회전 후 탱크의 이동으로 위치 변경 
 			}
-			spheres_pos = glm::rotate(spheres_pos, glm::radians(sphere_[k].now_yaw), glm::vec3(0.0, 1.0, 0.0));
-			spheres_pos = glm::translate(spheres_pos, glm::vec3(0.0, 0.0, sphere_[k].sphere_z));
+			spheres_pos = glm::rotate(spheres_pos, glm::radians(sphere_[index].now_yaw), glm::vec3(0.0, 1.0, 0.0));
+			spheres_pos = glm::translate(spheres_pos, glm::vec3(0.0, 0.0, sphere_[index].sphere_zz));
 			spheres_scale = glm::scale(spheres_scale, glm::vec3(0.07, 0.07, 0.07));
 			spheres_pos = spheres_pos * spheres_scale;
 			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(spheres_pos));
@@ -565,6 +608,7 @@ GLvoid drawObj() {
 			glUniform3f(objColorLocation, 1.0, 1.0, 1.0);
 			glDrawArrays(GL_TRIANGLES, 0, sphere_object);
 		}
+	}
 		//---------------------------------------------------------------------------------------------------------
 		//아이템
 
@@ -605,7 +649,7 @@ GLvoid drawObj() {
 					glDrawArrays(GL_TRIANGLES, 0, itemobject);
 				}
 			}
-		}
+		
 	}
 }
 
@@ -632,6 +676,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 
 
 		//-------------------------------------------------------------------------------------------------------------------------------
+
 
 		//뷰 변환
 		glm::mat4 view = glm::mat4(1.0f);
@@ -683,6 +728,8 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		glm::vec3 temp_position = glm::vec3(1.0);
 		sphere_position = spheres_pos * glm::vec4(temp_position, 1.0);
 
+
+
 		//-------------------------------------------------------------------------------------------------
 	}
 	glutSwapBuffers(); // 화면에 출력하기
@@ -695,13 +742,34 @@ void Timer(int Value) {
 	item_colliCHK();
 
 	//포탄 
-	if (sphere_[k].launch) {
-		sphere_[k].sphere_z -= 1.0;
-		if (sphere_[k].sphere_z <= -15.0f) {
-			k++;
-			sphere_[k].launch = false;
+	for (int i = 0; i < MAX_USER; ++i) {
+		if (sphere_[i].launch) {
+			sphere_[i].sphere_zz -= 1.0;
+			
+			if (sphere_[i].sphere_zz < -2.0) bullet_colliCHK();
+			if (sphere_[i].sphere_zz == -15.0f) {
+				sphere_[i].launch = false;
+				sphere_[i].sphere_zz = 0;
+			}
 		}
 	}
+
+	//무적시간 타이머
+	if (collide_god) {
+		time_god += 1;
+		if (time_god == 1000) {
+			collide_god = false;
+		}
+	}
+	//얼리기 타이머
+	if (collide_ice) {
+		time_ice += 1;
+		if (time_god == 1000) {
+			chaseOn = true;
+			collide_ice = false;
+		}
+	}
+
 
 	glutTimerFunc(30, Timer, 1);
 	glutPostRedisplay();
@@ -721,6 +789,8 @@ void Keyboard(unsigned char key, int x, int y)
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::UP;
 		//cout << "Input w" << endl;
+		cout << "본인 채력 확인" << g_players[g_myid].hp << endl;
+
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
@@ -753,6 +823,7 @@ void Keyboard(unsigned char key, int x, int y)
 	}
 			break;
 	case 'r': {
+
 		CS_READY_PACKET* packet = new CS_READY_PACKET;
 		packet->type = CS_READY;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_READY_PACKET));
@@ -777,7 +848,6 @@ void Keyboard(unsigned char key, int x, int y)
 
 	glutPostRedisplay();
 }
-
 //==충돌 체크=============================================================================================
 bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB) {
 
@@ -794,8 +864,9 @@ bool mov_coliiCHK() {
 			if (Block[i][j].exist)
 			{
 				if (collision_Chk(Block[i][j].x - 1.0, Block[i][j].x + 1.0, Block[i][j].z - 2.0, Block[i][j].z + 2.0,
-					g_players[g_myid].x - 0.5, g_players[g_myid].x + 0.5, g_players[g_myid].z - 0.5, g_players[g_myid].z + 0.5))
+					Player.x - 0.5, Player.x + 0.5, Player.z - 0.5, Player.z + 0.5))
 				{
+
 					return true;
 				}
 			}
@@ -807,6 +878,7 @@ bool mov_coliiCHK() {
 
 }
 
+
 //3차원 충돌 (수정 필요..)
 bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU, float bL, float bR, float bT, float bB, float bD, float bU) {
 	if (aL <= bR && aR >= bL
@@ -817,6 +889,40 @@ bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU,
 }
 
 
+void bullet_colliCHK() {
+	glm::vec3 temp_position = glm::vec3(1.0);
+	sphere_position = spheres_pos * glm::vec4(temp_position, 1.0);
+
+	for (int i = 0; i < MAX_USER; i++)
+	{
+		// 상대방 정보로 비교
+		if (g_myid != g_players[i].id)	// 제작 중 확인해 보니 클라 id를 안받아오고 초기화 되어있는 상태 그대로임 -> 수정함
+		{
+			if (collision_Chk(
+				g_players[i].x - 0.8, g_players[i].x + 0.8, g_players[i].z - 0.3, g_players[i].z + 0.3,
+				sphere_position.x - 0.1, sphere_position.x + 0.1, sphere_position.z - 0.1, sphere_position.z + 0.1)
+				)
+			{
+				cout << "상대 위치" << g_players[i].x << " / " << g_players[i].z << endl;
+				cout << "내 위치" << g_players[g_myid].x << " / " << g_players[g_myid].z << endl;
+				cout << "총알 위치" << sphere_position.x << " / " << sphere_position.z << endl;
+				cout << g_players[i].id << "플레이어 피격 확인" <<g_myid << endl;
+
+				g_players[i].hp -= 10;
+
+				CS_HIT_PACKET* packet = new CS_HIT_PACKET;
+				packet->type = CS_HIT;
+				packet->hp = g_players[i].hp;
+				packet->id = g_players[i].id;
+
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_HIT_PACKET));
+
+			}
+		}
+	}
+
+}
+
 void item_colliCHK() {
 	//체력 회복
 	for (int i = 0; i < 3; i++)
@@ -824,7 +930,7 @@ void item_colliCHK() {
 		if (heart[i].exist)
 		{
 			//cout << "플레이어" << g_players[g_myid].x << "아이템" <<heart[i].x << endl;
-	
+
 			if (collision_Chk(heart[i].x - 0.3, heart[i].x + 0.3, heart[i].z - 0.3, heart[i].z + 0.3,
 				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
 			{
@@ -886,19 +992,30 @@ void item_colliCHK() {
 	}
 }
 
+
 //==탱크 움직임=============================================================================================
 
 void Mouse(int button, int state, int x, int y)
 {
 	//포탄 발사
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		sphere_[k].now_yaw = yaw;
-		sphere_[k].launch = true;
-		PlaySound(TEXT("gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
+	if (g_setItem) {
+		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			if (g_players[g_myid].bullet_cnt > 0) {
+				//sphere_[k].now_yaw = yaw;
+				//sphere_[k].launch = true;
+				PlaySound(TEXT("gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
-		CS_ATTACK_PACKET* packet = new CS_ATTACK_PACKET;
-		packet->tpye = CS_ATTACK;
+				CS_ATTACK_PACKET* packet = new CS_ATTACK_PACKET;
+				packet->tpye = CS_ATTACK;
+				packet->now_yaw = yaw;
+				packet->x = g_players[g_myid].x;
+				packet->z = g_players[g_myid].z;
+				packet->isshoot = true;
 
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof CS_ATTACK_PACKET);
+				delete packet;
+			}
+		}
 	}
 
 	//카메라 변경
@@ -937,6 +1054,7 @@ void Motion(int xpos, int ypos) {
 	packet->type = CS_YAW;
 	packet->yaw = yaw;
 	networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_YAW_PACKET));
+	delete packet;
 
 	pitch += yoffset;
 
@@ -1085,6 +1203,7 @@ void get_Block() {
 
 GLvoid Reshape(int w, int h) //--- 콜백 함수: 다시 그리기 콜백 함수 
 {
+
 	glViewport(0, 0, w, h);
 }
 

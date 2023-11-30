@@ -32,6 +32,16 @@ struct	Heart heart[3];
 struct	Wheel wheel[3];
 struct 	ICE ice[3];
 
+struct Sphere {
+	bool launch = false;
+	float sphere_z = 0;
+	float now_yaw = 0;
+	float x;
+	float z;
+};
+
+struct Sphere sphere[BULLET_CNT]; // 포탄의 갯수 
+
 float temp_x;
 float temp_z;
 
@@ -62,6 +72,7 @@ void item_setup()
 }
 
 std::array<Session, MAX_USER> g_players;
+int g_bullet_num;
 int g_ClientNum;
 bool g_AllPlayerReady = false;
 bool g_GameStart = false;
@@ -270,7 +281,6 @@ int main()
 	WSACleanup();
 	return 0;
 }
-
 // 초당패킷을 계산하여 클라에게 계속 뿌려준다
 DWORD WINAPI do_send(LPVOID lpParam)
 {
@@ -291,7 +301,7 @@ DWORD WINAPI do_send(LPVOID lpParam)
 			for (int i = 0; i < MAX_USER; ++i) {
 				if (g_players[i].GetOnline()) {
 					scpacket->id = g_players[i].GetId();
-					//scpacket->hp = g_players[i].GetHp();
+					scpacket->hp = g_players[i].GetHp();
 					scpacket->x = g_players[i].GetX();
 					scpacket->y = g_players[i].GetY();
 					scpacket->z = g_players[i].GetZ();
@@ -335,13 +345,26 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			g_players[socketinfo->id].SetOnline(true);
 			int namelen = strlen(cspacket->name);
 			std::cout << "클라로부터 얻어온 아이디 : " << g_players[socketinfo->id].GetName() << std::endl;
+			
+			//g_player에 초기 정보 받아오기
+			g_players[socketinfo->id].SetHp(HP);
+			g_players[socketinfo->id].setBulletCnt(BULLET_CNT);
+			g_players[socketinfo->id].SetSpeed(SPEED);
+			//g_players[socketinfo->id].SetX(X);
+			//g_players[socketinfo->id].SetY(Y);
+			//g_players[socketinfo->id].SetY(Z);
+			
 			//자신 포함 다른클라에게도 로그인했다고 보내기
-
 			SC_LOGIN_OK_PACKET* scpacket = new SC_LOGIN_OK_PACKET;
 			scpacket->type = SC_LOGIN_OK;
 			memcpy(scpacket->name, g_players[socketinfo->id].GetName(), sizeof(g_players[socketinfo->id].GetName()));
 			scpacket->id = g_players[socketinfo->id].GetId();
-
+			scpacket->hp = g_players[socketinfo->id].GetHp();
+			scpacket->bullet_cnt = g_players[socketinfo->id].GetBulletCnt();
+			//scpacket->x = g_players[socketinfo->id].GetX();
+			//scpacket->y = g_players[socketinfo->id].GetY();
+			//scpacket->z = g_players[socketinfo->id].GetZ();
+			scpacket->speed = g_players[socketinfo->id].GetSpeed();
 			std::cout << "서버가 보내는 아이디 : " << scpacket->id << std::endl;
 			len = sizeof(SC_LOGIN_OK_PACKET);
 
@@ -428,21 +451,66 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		}
 				   break;
 		case CS_ATTACK: {
-			
+			CS_ATTACK_PACKET* cspacket = reinterpret_cast<CS_ATTACK_PACKET*>(p);
+			////////////////////////////////////////////////////////////////////
+			//이 구간은 클라로부터 받은 총알의 시작지점과 y값 발사bool값을 나타냄
+			{
+				std::lock_guard<std::mutex> lock(g_Recvmutex);
+				sphere[g_bullet_num].now_yaw = cspacket->now_yaw;
+				sphere[g_bullet_num].x = cspacket->x;
+				sphere[g_bullet_num].z = cspacket->z;
+				sphere[g_bullet_num].launch = cspacket->isshoot;
+				++g_bullet_num;
+			}
+
+			//std::cout << cspacket->now_yaw << std::endl;
+			//std::cout << cspacket->x << std::endl;
+			//std::cout << cspacket->z << std::endl;
+
+			////////////////////////////////////////////////////////////////////
+			g_players[socketinfo->id].setBulletCnt(g_players[socketinfo->id].GetBulletCnt() - 1);	//한발씩 감소
+			std::cout << socketinfo->id << "번 클라이언트 포탄 발사!! 남은 총알 : " << g_players[socketinfo->id].GetBulletCnt() << std::endl;
+
+			SC_ATTACK_PACKET* scpacket = new SC_ATTACK_PACKET;
+			scpacket->type = SC_ATTACK;
+			scpacket->id = socketinfo->id;
+			scpacket->now_yaw = cspacket->now_yaw;
+			scpacket->x = cspacket->x;
+			scpacket->z = cspacket->z;
+			scpacket->isshoot = true;
+
+			//std::cout << scpacket->id << std::endl;
+			//std::cout << scpacket->now_yaw << std::endl;
+			//std::cout << scpacket->x << std::endl;
+			//std::cout << scpacket->z << std::endl;
+
+			int len = sizeof SC_ATTACK_PACKET;
+			{
+				std::lock_guard<std::mutex> lock(g_Recvmutex);
+				for (int i = 0; i < MAX_USER; ++i) {
+					if (g_players[i].GetOnline()) {
+						//EnterCriticalSection(&g_cs);
+						send(g_players[i].GetSocket(), reinterpret_cast<char*>(&len), sizeof(int), 0);
+						send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), len, 0);
+						//LeaveCriticalSection(&g_cs);
+					}
+				}
+			}
+			delete scpacket;
 		}
 					  break;
 		case CS_ITEM: {
 			CS_ITEM_PACKET* cspacket = reinterpret_cast<CS_ITEM_PACKET*>(p);
-			
+
 			if (cspacket->item == HEAL)		heart[cspacket->num].exist = false;
 			if (cspacket->item == SPEEDUP)	wheel[cspacket->num].exist = false;
 			if (cspacket->item == FREEZE)	ice[cspacket->num].exist = false;
-			
+
 			SC_SET_ITEM_PACKET* packet = new SC_SET_ITEM_PACKET;
 			packet->type = SC_SET_ITEM;
 			int len = sizeof SC_SET_ITEM_PACKET;
 			packet->item_type = cspacket->item;
-			
+
 			for (int i = 0; i < 3; i++)
 			{
 				if (packet->item_type == HEAL)
@@ -473,9 +541,23 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			std::cout << "아이템 변경 값 보내줌" << std::endl;
 		}
 					break;
-		}
 
-		
+		case CS_HIT: {
+			CS_HIT_PACKET* cspacket = reinterpret_cast<CS_HIT_PACKET*>(p);
+
+			for (int i = 0; i < MAX_USER; i++)
+			{
+				if (cspacket->id == g_players[i].GetId()) 
+				{
+					int tempHP = g_players[i].GetHp() - 10;
+					g_players[i].SetHp(tempHP);
+				}
+			}
+
+		}
+				   break;
+
+		}
 		//버퍼,길이 초기화
 		memset(buf, 0, sizeof(buf));
 		len = 0;

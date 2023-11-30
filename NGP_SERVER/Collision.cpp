@@ -20,3 +20,4 @@ void Setup_Block()
 		Block[i][29].exist = true;
 	}
 }
+
