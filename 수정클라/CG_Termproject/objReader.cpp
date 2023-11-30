@@ -20,9 +20,10 @@ GLint loadOBJ(const char* path,
 
 	float sizeX, sizeY, sizeZ;
 
-	FILE* file = fopen(path, "r");
+	FILE* file = fopen(path, "rb");
 	if (file == NULL) {
 		printf("Impossible to open the file !\n");
+		printf("%s\n", path);
 		return false;
 	}
 	while (1) {

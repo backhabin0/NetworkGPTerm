@@ -27,6 +27,8 @@ private:
 	bool m_accept_player;	// 유저 수용 여부
 	bool m_ready_player=false;	// 
 	float m_yaw;
+	bool m_collision; // 탱크충돌여부
+	
 public:
 
 	Session();
@@ -45,6 +47,7 @@ public:
 	void SetAcceptPlayer(bool accept_player);
 	void SetReadyPlayer(bool ready_player);
 	void setYaw(float yaw);
+	void SetCollision(bool collid) { m_collision = collid; }
 
 	SOCKET GetSocket() const;
 	SocketInfo* GetSocketInfo() const;
@@ -60,6 +63,7 @@ public:
 	bool GetAcceptPlayer() const;
 	bool GetReadyPlayer() const;
 	float GetYaw() const;
+	bool GetCollision() const { return m_collision; }
 
 	bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB);
 	bool mov_coliiCHK(float x, float y, float z);
