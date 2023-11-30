@@ -14,13 +14,25 @@ void make_fragmentShaders(); //프래그먼트 세이더 만들기
 void make_shaderProgram(); //세이더 프로그램 생성
 void InitBuffer();
 char* filetobuf(const char* file);
+ 
 
 GLint height, width; //윈도우창 크기 
 GLuint shaderProgram; //세이더 프로그램 이름
 GLuint vertexShader;//버텍스 세이더 객체
 GLuint fragmentShader;//프래그먼트 세이더 객체
+float scene_[]
+{
+-0.5f, -0.5f, 0.f, 0.0, 0.0, 1.0, 0.0, 0.0,
+0.5f, -0.5f, 0.f, 0.0, 0.0, 1.0, 1.0, 0.0,
+0.5f, 0.5f, 0.f, 0.0, 0.0, 1.0, 1.0, 1.0,
+0.5f, 0.5f, 0.f, 0.0, 0.0, 1.0, 1.0, 1.0,
+-0.5f, 0.5f, 0.f, 0.0, 0.0, 1.0, 0.0, 1.0,
+-0.5f, -0.5f, 0.f, 0.0, 0.0, 1.0, 0.0, 0.0
+};
 
 
+int hp = 100;
+int u_hpscalex = 5;
 struct OBJ {
 	GLuint VAO, VBO_pos, VBO_normal, VBO_uv;
 	std::vector<glm::vec3> m_vertices;
@@ -32,7 +44,7 @@ OBJ block;
 OBJ map;
 OBJ item;
 OBJ sphere;
-
+OBJ hpblock;
 //랜덤출력
 using namespace std;
 
@@ -55,7 +67,6 @@ bool mov_coliiCHK();
 void bullet_colliCHK();
 void Setup_Block(); // 블럭 초기화
 void get_Block(); // 블록 출력
-
 
 //색상
 struct COLOR
@@ -146,7 +157,6 @@ float lastX, lastY;
 //------------------------------------------------------------------------------------------------------
 //포탄 
 
-GLint sphere_object = loadOBJ("sphere.obj", sphere.m_vertices, sphere.m_uvs, sphere.m_normals);
 
 int k = 0; //포탄 넘버
 
@@ -165,8 +175,9 @@ glm::mat4 spheres_pos;
 glm::vec4 sphere_position; //포탄의 위치 (충돌처리용)
 
 
-GLint itemobject = loadOBJ("cube.obj", item.m_vertices, item.m_uvs, item.m_normals);
-
+GLint sphere_object = loadOBJ("sphere.obj", sphere.m_vertices, sphere.m_uvs, sphere.m_normals);
+GLint itemobject = loadOBJ("cube.obj", item.m_vertices,item.m_uvs,item.m_normals);
+GLint hpbar_ = loadOBJ("cube.obj", hpblock.m_vertices,hpblock.m_uvs,hpblock.m_normals);
 
 struct Heart {
 	bool exist = true;
@@ -436,6 +447,26 @@ GLvoid InitBuffer() {
 	glBufferData(GL_ARRAY_BUFFER, map.m_normals.size() * sizeof(glm::vec3), &map.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
+	//hp바
+	glGenVertexArrays(1, &hpblock.VAO);
+	glGenBuffers(1, &hpblock.VBO_pos);
+	glGenBuffers(1, &hpblock.VBO_normal);
+	glGenBuffers(1, &hpblock.VBO_uv);
+
+	glUseProgram(shaderProgram);
+	glBindVertexArray(hpblock.VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, hpblock.VBO_pos);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	GLint pAttribute8 = glGetAttribLocation(shaderProgram, "aPos");
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, hpblock.VBO_normal);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	GLint nAttribute8 = glGetAttribLocation(shaderProgram, "aNormal");
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 
 	//블록
@@ -675,7 +706,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	}
 
 	else {
-
+		
 
 		//-------------------------------------------------------------------------------------------------------------------------------
 
@@ -731,7 +762,38 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		sphere_position = spheres_pos * glm::vec4(temp_position, 1.0);
 
 
-		//item_colliCHK();
+
+		//hpbar
+		{glViewport(0, 0, width, height);
+		view = glm::mat4(1.0f);
+		glm::vec3 map_pos = glm::vec3(0.0, 0.0, 1.0); //--- 카메라 위치
+		glm::vec3 mapDir = glm::vec3(0.0, 0.0f, 0.0f); //--- 카메라 바라보는 방향
+		glm::vec3 mapUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
+		view = glm::lookAt(map_pos, mapDir, mapUp);
+
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+		unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewTransform");
+		glBindVertexArray(VAO_map[0]);
+		glm::mat4 model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0, 3, -5));
+		model = glm::rotate(model, glm::radians(rotate_bigY), glm::vec3(0.0, 1.0, 0.0));
+		model = glm::scale(model, glm::vec3(u_hpscalex, 0.2, 0.5));
+
+		int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+		glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
+		unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+		glUniform3f(objColorLocation, 1.0,0.0,0.0);
+		//texture->InitTexture("hpbar2.png", &hpblock.texture);
+		//glBindTexture(GL_TEXTURE_2D, scene.texture);
+		glBindVertexArray(hpblock.VAO);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glUseProgram(shaderProgram); }
+
+
+
+
+
 
 		//-------------------------------------------------------------------------------------------------
 	}
@@ -773,8 +835,7 @@ void Timer(int Value)
 		}
 	}
 
-	
-
+	//hpbar();
 	glutTimerFunc(30, Timer, 1);
 	glutPostRedisplay();
 
@@ -846,6 +907,14 @@ void Keyboard(unsigned char key, int x, int y)
 		break;
 	case 'Q':
 		glutLeaveMainLoop();
+		break;
+
+
+		//디버깅용 hp
+	case 'h':
+		cout << hp << endl;
+		hp -= 10;
+		u_hpscalex -= hp * 0.0001;
 		break;
 	}
 

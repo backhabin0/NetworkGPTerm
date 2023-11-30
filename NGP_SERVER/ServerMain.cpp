@@ -1,6 +1,6 @@
 #include "Session.h"
 #include "error.h"
-#include "Collision.h"
+//#include "Collision.h"
 #include <mutex>
 #include <windows.h>
 #include "chrono"
@@ -9,6 +9,32 @@
 static std::random_device rd;
 static std::default_random_engine dre(rd());
 static std::uniform_int_distribution<int> uid(-28, 28);
+struct COLOR
+{
+	float r = 1.0f;
+	float g = 1.0f;
+	float b = 1.0f;
+};
+struct Map_Block
+{
+	bool exist = false;
+	float height = 0;
+
+	COLOR b_color;
+
+	//ÁÂÇ¥
+	float x = 0.0;
+	float y = 0.0;
+	float z = 0.0;
+
+	//Å©±â
+	float x_scale = 1.0;
+	float y_scale = 2.0;
+	float z_scale = 1.0;
+
+};Map_Block Block[30][30];
+
+
 
 struct Heart {
 	bool exist = true;
@@ -45,7 +71,91 @@ struct Sphere sphere[BULLET_CNT]; // Æ÷ÅºÀÇ °¹¼ö
 
 float temp_x;
 float temp_z;
+//==¸Ê ºí·° ÃÊ±âÈ­========================================================================================
 
+void Setup_Block() {
+
+
+	for (int i = 0; i < 30; i++)
+	{
+		for (int j = 0; j < 30; j++)
+		{
+			Block[i][j].b_color.r = 0.2;
+			Block[i][j].b_color.g = 0.1;
+			Block[i][j].b_color.b = 0.0;
+
+
+			Block[i][j].x = -29 + j * 2;
+			Block[i][j].z = -29 + i * 2;
+		}
+	}
+
+
+	// Å×µÎ¸® º®
+
+	for (int i = 0; i < 30; i++)
+	{
+		Block[0][i].exist = true;
+		Block[i][0].exist = true;
+
+		Block[29][i].exist = true;
+		Block[i][29].exist = true;
+	}
+}
+
+void make_map() {
+
+	for (int i = 0; i < 3; i++)
+	{
+		//ÀÛÀº ²©¼â
+		Block[8][8 + i].exist = true;
+		Block[8 + i][8].exist = true;
+
+		Block[20][8 + i].exist = true;
+		Block[20 - i][8].exist = true;
+
+
+		Block[8][20 - i].exist = true;
+		Block[8 + i][20].exist = true;
+
+
+		Block[20][20 - i].exist = true;
+		Block[20 - i][20].exist = true;
+
+	}
+
+
+	for (int i = 0; i < 2; i++)
+	{
+		//Áß¾Ó »ç°¢Çü
+		//Block[13][14 + i].exist = true;
+		//Block[16][14 + i].exist = true;
+		//
+		//Block[14+i][13].exist = true;
+		//Block[14+i][16].exist = true;
+	}
+
+
+
+	for (int i = 0; i < 4; i++)
+	{
+		//Å« ²©¼â
+		Block[4][4 + i].exist = true;
+		Block[4 + i][4].exist = true;
+
+		Block[25][4 + i].exist = true;
+		Block[25 - i][4].exist = true;
+
+
+		Block[4][25 - i].exist = true;
+		Block[4 + i][25].exist = true;
+
+
+		Block[25][25 - i].exist = true;
+		Block[25 - i][25].exist = true;
+	}
+
+}
 void item_setup()
 {
 	for (int i = 0; i < 3; i++)
@@ -86,12 +196,16 @@ DWORD WINAPI ClientThread(LPVOID socket);
 DWORD WINAPI do_send(LPVOID lpParam);
 
 void tank_collid(std::array<Session, MAX_USER>& players);
+void wall_collid(std::array<Session, MAX_USER>& players, short id);
 bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB);
 ///////////////////////////////////////////////////////////
 int main()
 {
+
+	Setup_Block();
+	make_map();
 	//¸Ê»ý¼º
-	//Setup_Block();
+
 	InitializeCriticalSection(&g_maincs);
 	InitializeCriticalSection(&g_clientThreadcs);
 	int retval;
@@ -424,12 +538,20 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + 0.3);
 				std::cout << socketinfo->id << "¹ø Å¬¶ó w´©¸¦¶§ : " << g_players[socketinfo->id].GetZ() + 0.3 << std::endl;
 				tank_collid(g_players);
+				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "ÅÊÅ©³¢¸® Ãæµ¹" << std::endl;
 					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - 0.3);
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
+				}
+				if (g_players[socketinfo->id].GetWallCollision())
+				{
+					std::cout << "ÅÊÅ©-º® Ãæµ¹" << std::endl;
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - 0.3);
+					g_players[socketinfo->id].SetWallCollision(false);
+
 				}
 				LeaveCriticalSection(&g_clientThreadcs);
 			}
@@ -439,12 +561,20 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - 0.3);
 				std::cout << socketinfo->id << "¹ø Å¬¶ó s´©¸¦¶§ : " << g_players[socketinfo->id].GetZ() - 0.3 << std::endl;
 				tank_collid(g_players);
+				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "ÅÊÅ©³¢¸® Ãæµ¹" << std::endl;
 					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + 0.3);
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
+				}
+				if (g_players[socketinfo->id].GetWallCollision())
+				{
+					std::cout << "ÅÊÅ©-º® Ãæµ¹" << std::endl;
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + 0.3);
+					g_players[socketinfo->id].SetWallCollision(false);
+
 				}
 				LeaveCriticalSection(&g_clientThreadcs);
 			}
@@ -454,12 +584,20 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + 0.3);
 				std::cout << socketinfo->id << "¹ø Å¬¶ó a´©¸¦¶§ : " << g_players[socketinfo->id].GetX() + 0.3 << std::endl;
 				tank_collid(g_players);
+				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "ÅÊÅ©³¢¸® Ãæµ¹" << std::endl;
 					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - 0.3);
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
+				}
+				if (g_players[socketinfo->id].GetWallCollision())
+				{
+					std::cout << "ÅÊÅ©-º® Ãæµ¹" << std::endl;
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - 0.3);
+					g_players[socketinfo->id].SetWallCollision(false);
+
 				}
 				LeaveCriticalSection(&g_clientThreadcs);
 				break;
@@ -468,12 +606,20 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - 0.3);
 				std::cout << socketinfo->id << "¹ø Å¬¶ó d´©¸¦¶§ : " << g_players[socketinfo->id].GetX() - 0.3 << std::endl;
 				tank_collid(g_players);
+				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "ÅÊÅ©³¢¸® Ãæµ¹" << std::endl;
 					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + 0.3);
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
+				}
+				if (g_players[socketinfo->id].GetWallCollision())
+				{
+					std::cout << "ÅÊÅ©-º® Ãæµ¹" << std::endl;
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + 0.3);
+					g_players[socketinfo->id].SetWallCollision(false);
+
 				}
 				LeaveCriticalSection(&g_clientThreadcs);
 
@@ -635,4 +781,24 @@ bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, f
 
 	if (bB <= aT || bT >= aB || bR <= aL || bL >= aR) return false;
 	return true;
+}
+
+void wall_collid(std::array<Session, MAX_USER>& players,short id)
+{
+	int id_ = static_cast<int>(id);
+	for (int i = 0; i < 30; i++)
+	{
+		for (int j = 0; j < 30; j++)
+		{
+			if (Block[i][j].exist)
+			{
+				if (collision_Chk(Block[i][j].x - 1.0, Block[i][j].x + 1.0, Block[i][j].z - 2.0, Block[i][j].z + 2.0,
+					players[id_].GetX() - 0.7, players[id_].GetX() + 0.7, players[id_].GetZ() - 0.7, players[id_].GetZ() + 0.7))
+				{
+					players[id_].SetWallCollision(true);
+				}
+			}
+		}
+	}
+	players[id_].SetCollision(false);
 }
