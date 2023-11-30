@@ -28,6 +28,7 @@ private:
 	bool m_ready_player=false;	// 
 	float m_yaw;
 	bool m_collision; // 攀农面倒咯何
+	bool m_wallCollision; // 攀农-寒 面倒咯何
 	
 public:
 
@@ -48,6 +49,7 @@ public:
 	void SetReadyPlayer(bool ready_player);
 	void setYaw(float yaw);
 	void SetCollision(bool collid) { m_collision = collid; }
+	void SetWallCollision(bool collid) { m_wallCollision = collid; }
 
 	SOCKET GetSocket() const;
 	SocketInfo* GetSocketInfo() const;
@@ -64,6 +66,7 @@ public:
 	bool GetReadyPlayer() const;
 	float GetYaw() const;
 	bool GetCollision() const { return m_collision; }
+	bool GetWallCollision() const { return m_wallCollision; }
 
 	bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB);
 	bool mov_coliiCHK(float x, float y, float z);
