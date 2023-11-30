@@ -41,6 +41,8 @@ constexpr char CS_ITEM = 4;
 constexpr char CS_LOGOUT = 5;
 constexpr char CS_YAW = 6;
 constexpr char CS_ATTACK_END = 7;
+constexpr char CS_HIT = 8;
+
 
 constexpr char SC_LOGIN_INFO = 0;
 constexpr char SC_LOGIN_OK = 1;
@@ -93,6 +95,12 @@ struct CS_ITEM_PACKET {
 	char item;
 	bool exist;
 	int num;
+};
+
+struct CS_HIT_PACKET {
+	char type;
+	int id;
+	int hp;
 };
 
 struct CS_LOGOUT_PACKET {

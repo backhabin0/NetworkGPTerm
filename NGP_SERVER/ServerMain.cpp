@@ -594,6 +594,20 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		//	std::cout << "아이템 변경 값 보내줌" << std::endl;
 		}
 					break;
+		case CS_HIT: {
+			CS_HIT_PACKET* cspacket = reinterpret_cast<CS_HIT_PACKET*>(p);
+
+			for (int i = 0; i < MAX_USER; i++)
+			{
+				if (cspacket->id == g_players[i].GetId())
+				{
+					int tempHP = g_players[i].GetHp() - 10;
+					g_players[i].SetHp(tempHP);
+				}
+			}
+
+		}
+				   break;
 		}
 		//버퍼,길이 초기화
 		memset(buf, 0, sizeof(buf));
