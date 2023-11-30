@@ -40,6 +40,7 @@ constexpr char CS_ATTACK = 3;
 constexpr char CS_ITEM = 4;
 constexpr char CS_LOGOUT = 5;
 constexpr char CS_YAW = 6;
+constexpr char CS_RELOAD = 7;
 constexpr char CS_HIT = 8;
 
 
@@ -57,6 +58,7 @@ constexpr char SC_PLAYING_TIME = 10;
 constexpr char SC_UPDATE = 11;
 constexpr char SC_SET_ITEM = 12;
 constexpr char SC_ALL_ITEM_SET = 13;
+constexpr char SC_RELOAD = 14;
 
 #pragma pack(push,1)
 
@@ -94,6 +96,10 @@ struct CS_ITEM_PACKET {
 	char item;
 	bool exist;
 	int num;
+};
+
+struct CS_RELOAD_PACKET {
+	char type;
 };
 
 struct CS_HIT_PACKET {
@@ -192,5 +198,10 @@ struct SC_SET_ITEM_PACKET {
 
 struct SC_ALL_ITEM_SET_PACKET {
 	char type;
+};
+
+struct SC_RELOAD_PACKET {
+	char type;
+	int bullet_num;
 };
 #pragma pack (pop)

@@ -331,6 +331,12 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 
 		}
 							 break;
+		case SC_RELOAD: {
+			SC_RELOAD_PACKET* packet = reinterpret_cast<SC_RELOAD_PACKET*>(buf);
+			g_players[g_myid].bullet_cnt = packet->bullet_num;
+			cout << g_myid << "번 클라이언트 재장전 완료 남은 총알 수 : " << packet->bullet_num << endl;
+		}
+					  break;
 		}
 	}
 	return 0;
@@ -854,7 +860,7 @@ void Keyboard(unsigned char key, int x, int y)
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::UP;
 		//cout << "Input w" << endl;
-		cout << "본인 채력 확인" << g_players[g_myid].hp << endl;
+		//cout << "본인 채력 확인" << g_players[g_myid].hp << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
@@ -902,8 +908,12 @@ void Keyboard(unsigned char key, int x, int y)
 		//디버깅용
 
 		//종료
-	case 'q':
-		glutLeaveMainLoop();
+	case 'q': {
+		CS_RELOAD_PACKET* packet = new CS_RELOAD_PACKET;
+		packet->type = CS_RELOAD;
+		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_RELOAD_PACKET));
+		delete packet;
+	}
 		break;
 	case 'Q':
 		glutLeaveMainLoop();
@@ -975,12 +985,12 @@ void bullet_colliCHK() {
 				sphere_position.x - 0.1, sphere_position.x + 0.1, sphere_position.z - 0.1, sphere_position.z + 0.1)
 				)
 			{
-				cout << "상대 위치" << g_players[i].x << " / " << g_players[i].z << endl;
-				cout << "내 위치" << g_players[g_myid].x << " / " << g_players[g_myid].z << endl;
-				cout << "총알 위치" << sphere_position.x << " / " << sphere_position.z << endl;
-				cout << g_players[i].id << "플레이어 피격 확인" << g_myid << endl;
+				//cout << "상대 위치" << g_players[i].x << " / " << g_players[i].z << endl;
+				//cout << "내 위치" << g_players[g_myid].x << " / " << g_players[g_myid].z << endl;
+				//cout << "총알 위치" << sphere_position.x << " / " << sphere_position.z << endl;
 
 				g_players[i].hp -= 10;
+				//cout << g_myid << "가 상대를 맞췄습니다. 상대방 남은 체력 : " << g_players[i].hp << endl;
 
 				CS_HIT_PACKET* packet = new CS_HIT_PACKET;
 				packet->type = CS_HIT;
