@@ -743,7 +743,7 @@ void Timer(int Value)
 	//Æ÷Åº 
 	for (int i = 0; i < MAX_USER; ++i) {
 		if (sphere_[i].isfreeze == true) {
-			//cout << "¾óÀ½Æ÷Åº" << endl;
+			cout << "¾óÀ½Æ÷Åº" << endl;
 			if (sphere_[i].launch) {
 				sphere_[i].sphere_zz -= 1.0;
 				if (sphere_[i].sphere_zz == -15.0f) {
@@ -754,7 +754,7 @@ void Timer(int Value)
 		}
 		else {
 			if (sphere_[i].launch) {
-				//cout << "ÀÏ¹ÝÆ÷Åº" << endl;
+				cout << "ÀÏ¹ÝÆ÷Åº" << endl;
 				sphere_[i].sphere_zz -= 1.0;
 				if (sphere_[i].sphere_zz == -15.0f) {
 					sphere_[i].launch = false;
