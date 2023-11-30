@@ -156,6 +156,7 @@ struct Sphere_ {
 	float now_yaw = 0;
 	float x;
 	float z;
+	bool isfreeze;
 };
 
 struct Sphere_ sphere_[2]; // 포탄의 갯수 
@@ -185,8 +186,7 @@ struct ICE {
 };
 
 struct Heart heart[3];
-struct Wheel wheel[3];
-
+struct Wheel speedup[3];
 struct ICE ice[3];
 
 
@@ -228,9 +228,9 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			g_players[g_myid].bullet_cnt = packet->bullet_cnt;
 			g_players[g_myid].speed = packet->speed;
 
-			cout <<  "체력 - " << g_players[g_myid].hp << endl;
-			cout <<  "총알 수 - " << g_players[g_myid].bullet_cnt << endl;
-			cout <<  "스피드 - " << g_players[g_myid].speed << endl;
+			//cout <<  "체력 - " << g_players[g_myid].hp << endl;
+			//cout <<  "총알 수 - " << g_players[g_myid].bullet_cnt << endl;
+			//cout <<  "스피드 - " << g_players[g_myid].speed << endl;
 		}
 						break;
 		case SC_READY_OK: {
@@ -249,7 +249,7 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 					g_players[packet->id].speed = packet->speed;
 					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 					g_players[packet->id].yaw = packet->yaw;
-					//std::cout << packet->id << "번 남은 총알 수 : " << packet->bullet_cnt << std::endl;
+				//	std::cout << g_players[packet->id].speed << std::endl;
 				}
 				else {
 					g_players[packet->id].hp = packet->hp;
@@ -259,7 +259,7 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 					g_players[packet->id].speed = packet->speed;
 					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 					g_players[packet->id].yaw = packet->yaw;
-					//std::cout << packet->id << "번 남은 총알 수 : " << packet->bullet_cnt << std::endl;
+				//	std::cout << g_players[packet->id].speed << std::endl;
 				}
 			}
 		}
@@ -277,9 +277,9 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			}
 			else if (packet->item_type == SPEEDUP) {
 				for (int i = 0; i < 3; ++i) {
-					wheel[i].exist = packet->exist[i];
-					wheel[i].x = packet->x[i];
-					wheel[i].z = packet->z[i];
+					speedup[i].exist = packet->exist[i];
+					speedup[i].x = packet->x[i];
+					speedup[i].z = packet->z[i];
 				}
 			}
 			else if (packet->item_type == FREEZE) {
@@ -296,6 +296,7 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			g_setItem = true;
 		}
 							break;
+
 		case SC_ATTACK: {
 			SC_ATTACK_PACKET* packet = reinterpret_cast<SC_ATTACK_PACKET*>(buf);
 			g_attackid = packet->id;
@@ -303,12 +304,15 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			sphere_[g_attackid].x = packet->x;
 			sphere_[g_attackid].z = packet->z;
 			sphere_[g_attackid].launch = packet->isshoot;
+			sphere_[g_attackid].isfreeze = packet->isfreeze;
 
 			cout << packet->id << endl;
 			cout << packet->now_yaw << endl;
 			cout << packet->x << endl;
 			cout << packet->z << endl;
 			cout << packet->isshoot << endl;
+			cout << packet->isfreeze << endl;
+
 		}
 							 break;
 		}
@@ -504,8 +508,7 @@ void start_page() {
 	glm::mat4 view = glm::mat4(1.0f);
 	cameraPos.x = 0.0; //카메라 위치를 탱크 위치로 고정
 	cameraPos.z = 0.0;
-	//cameraPos.y = 65.0; //카메라를 위쪽(y축)으로 조정
-	cameraPos.y = 30.0; //카메라를 위쪽(y축)으로 조정
+	cameraPos.y = 65.0; //카메라를 위쪽(y축)으로 조정
 
 	glm::vec3 Diretion = glm::vec3(0.0, 0.0, 0.0);
 	cameraUp = glm::vec3(0.0, 0.0, -1.0); //--- 카메라 위쪽 방향
@@ -621,9 +624,9 @@ GLvoid drawObj() {
 			}
 			//속도 증가
 			for (int i = 0; i < 3; i++) {
-				if (wheel[i].exist) {
+				if (speedup[i].exist) {
 					glm::mat4 velocity = glm::mat4(1.0);
-					velocity = glm::translate(velocity, glm::vec3(wheel[i].x, 0, wheel[i].z));
+					velocity = glm::translate(velocity, glm::vec3(speedup[i].x, 0, speedup[i].z));
 					velocity = glm::scale(velocity, glm::vec3(0.2, 0.2, 0.2));
 					glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(velocity));
 					glBindVertexArray(VAO_item[0]);
@@ -723,7 +726,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		sphere_position = spheres_pos * glm::vec4(temp_position, 1.0);
 
 
-		item_colliCHK();
+		//item_colliCHK();
 
 		//-------------------------------------------------------------------------------------------------
 	}
@@ -732,35 +735,36 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 
 //====================================================================================================
 //애니메이션
-void Timer(int Value) {
+void Timer(int Value) 
+{
 	
+	item_colliCHK();
+
 	//포탄 
 	for (int i = 0; i < MAX_USER; ++i) {
-		if (sphere_[i].launch) {
-			sphere_[i].sphere_zz -= 1.0;
-			if (sphere_[i].sphere_zz == -15.0f) {
-				sphere_[i].launch = false;
-				sphere_[i].sphere_zz = 0;
+		if (sphere_[i].isfreeze == true) {
+			//cout << "얼음포탄" << endl;
+			if (sphere_[i].launch) {
+				sphere_[i].sphere_zz -= 1.0;
+				if (sphere_[i].sphere_zz == -15.0f) {
+					sphere_[i].launch = false;
+					sphere_[i].sphere_zz = 0;
+				}
+			}
+		}
+		else {
+			if (sphere_[i].launch) {
+				//cout << "일반포탄" << endl;
+				sphere_[i].sphere_zz -= 1.0;
+				if (sphere_[i].sphere_zz == -15.0f) {
+					sphere_[i].launch = false;
+					sphere_[i].sphere_zz = 0;
+				}
 			}
 		}
 	}
 
-	//무적시간 타이머
-	if (collide_god) {
-		time_god += 1;
-		if (time_god == 1000) {
-			collide_god = false;
-		}
-	}
-	//얼리기 타이머
-	if (collide_ice) {
-		time_ice += 1;
-		if (time_god == 1000) {
-			chaseOn = true;
-			collide_ice = false;
-		}
-	}
-
+	
 
 	glutTimerFunc(30, Timer, 1);
 	glutPostRedisplay();
@@ -769,7 +773,7 @@ void Timer(int Value) {
 
 
 
-float speed = 0.3;
+//float speed = 0.3;
 void Keyboard(unsigned char key, int x, int y)
 {
 	switch (key) {
@@ -779,7 +783,7 @@ void Keyboard(unsigned char key, int x, int y)
 		CS_MOVE_PACKET* packet = new CS_MOVE_PACKET;
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::UP;
-		cout << "Input w" << endl;
+		//cout << "Input w" << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
@@ -788,7 +792,7 @@ void Keyboard(unsigned char key, int x, int y)
 		CS_MOVE_PACKET* packet = new CS_MOVE_PACKET;
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::LEFT;
-		cout << "Input a" << endl;
+		//cout << "Input a" << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
@@ -797,7 +801,7 @@ void Keyboard(unsigned char key, int x, int y)
 		CS_MOVE_PACKET* packet = new CS_MOVE_PACKET;
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::DOWN;
-		cout << "Input s" << endl;
+		//cout << "Input s" << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
@@ -806,7 +810,7 @@ void Keyboard(unsigned char key, int x, int y)
 		CS_MOVE_PACKET* packet = new CS_MOVE_PACKET;
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::RIGHT;
-		cout << "Input d" << endl;
+		//cout << "Input d" << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
@@ -889,11 +893,20 @@ void item_colliCHK() {
 		if (heart[i].exist)
 		{
 			if (collision_Chk(heart[i].x - 0.3, heart[i].x + 0.3, heart[i].z - 0.3, heart[i].z + 0.3,
-				Player.x - 0.3, Player.x + 0.3, Player.z - 0.3, Player.z + 0.3))
+				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
 			{
 				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
-				heart[i].exist = false;
-				Player.hp += 30;
+				//heart[i].exist = false;
+				//Player.hp += 30;
+
+
+				CS_ITEM_PACKET* packet = new CS_ITEM_PACKET;
+				packet->type = CS_ITEM;
+				packet->item = HEAL;
+				packet->num = i;
+				packet->exist = false;
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_ITEM_PACKET));
+				delete packet;
 			}
 		}
 	}
@@ -901,14 +914,44 @@ void item_colliCHK() {
 	//속도 증가
 	for (int i = 0; i < 3; i++)
 	{
-		if (wheel[i].exist)
+		if (speedup[i].exist)
 		{
-			if (collision_Chk(wheel[i].x - 0.3, wheel[i].x + 0.3, wheel[i].z - 0.3, wheel[i].z + 0.3,
-				Player.x - 0.3, Player.x + 0.3, Player.z - 0.3, Player.z + 0.3))
+			if (collision_Chk(speedup[i].x - 0.3, speedup[i].x + 0.3, speedup[i].z - 0.3, speedup[i].z + 0.3,
+				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
 			{
 				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
-				wheel[i].exist = false;
-				speed = 0.7;
+				//speedup[i].exist = false;
+				//speed = 0.7;
+
+				CS_ITEM_PACKET* packet = new CS_ITEM_PACKET;
+				packet->type = CS_ITEM;
+				packet->item = SPEEDUP;
+				packet->num = i;
+				packet->exist = false;
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_ITEM_PACKET));
+				delete packet;
+			}
+		}
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (ice[i].exist)
+		{
+			if (collision_Chk(ice[i].x - 0.3, ice[i].x + 0.3, ice[i].z - 0.3, ice[i].z + 0.3,
+				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
+			{
+				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
+				//ice[i].exist = false;
+				//speed = 0.7;
+
+				CS_ITEM_PACKET* packet = new CS_ITEM_PACKET;
+				packet->type = CS_ITEM;
+				packet->item = FREEZE;
+				packet->num = i;
+				packet->exist = false;
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_ITEM_PACKET));
+				delete packet;
 			}
 		}
 	}

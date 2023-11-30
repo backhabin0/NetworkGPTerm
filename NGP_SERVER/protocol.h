@@ -69,6 +69,7 @@ struct CS_READY_PACKET {
 struct CS_MOVE_PACKET {
 	char type;
 	char direction;
+	bool isfreeze;
 };
 
 struct CS_ATTACK_PACKET {
@@ -89,6 +90,8 @@ struct CS_ATTACK_END_PACKET {
 struct CS_ITEM_PACKET {
 	char type;
 	char item;
+	bool exist;
+	int num;
 };
 
 struct CS_LOGOUT_PACKET {
@@ -156,6 +159,7 @@ struct SC_ATTACK_PACKET {
 	float x;
 	float z;
 	bool isshoot;
+	bool isfreeze;
 };
 
 struct SC_UPDATE_PACKET {
