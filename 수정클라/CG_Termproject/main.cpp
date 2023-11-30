@@ -663,7 +663,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 	glEnable(GL_DEPTH_TEST);
 	glUseProgram(shaderProgram);
 
-	if (!start) {
+	if (start) {
 		glViewport(0, 0, width, height);
 		start_page();
 		drawObj();
@@ -743,8 +743,8 @@ void Timer(int Value)
 	//포탄 
 	for (int i = 0; i < MAX_USER; ++i) {
 		if (sphere_[i].isfreeze == true) {
-			cout << "얼음포탄" << endl;
 			if (sphere_[i].launch) {
+				cout << "얼음포탄" << endl;
 				sphere_[i].sphere_zz -= 1.0;
 				if (sphere_[i].sphere_zz == -15.0f) {
 					sphere_[i].launch = false;
