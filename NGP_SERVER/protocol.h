@@ -39,7 +39,6 @@ constexpr char CS_ATTACK = 3;
 constexpr char CS_ITEM = 4;
 constexpr char CS_LOGOUT = 5;
 constexpr char CS_YAW = 6;
-constexpr char CS_ATTACK_END = 7;
 constexpr char CS_HIT = 8;
 
 
