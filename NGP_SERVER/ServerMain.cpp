@@ -768,9 +768,11 @@ DWORD WINAPI ClientThread(LPVOID socket)
 
 void tank_collid(std::array<Session, MAX_USER>& players)
 {
+	std::cout << "in" << std::endl;
 	if (collision_Chk(players[0].GetX() - 0.7, players[0].GetX() + 0.7, players[0].GetZ() - 0.7, players[0].GetZ() + 0.7,
 		players[1].GetX() - 0.7, players[1].GetX() + 0.7, players[1].GetZ() - 0.7, players[1].GetZ() + 0.7))
 	{
+		std::cout << "out" << std::endl;
 		players[0].SetCollision(true);
 		players[1].SetCollision(true);
 	}
@@ -800,5 +802,4 @@ void wall_collid(std::array<Session, MAX_USER>& players,short id)
 			}
 		}
 	}
-	players[id_].SetCollision(false);
 }

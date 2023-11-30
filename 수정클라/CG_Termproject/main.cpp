@@ -211,7 +211,7 @@ bool collide_ice = false;
 
 //=======================================================================================================
 
-bool start = true;
+bool start = false;
 
 NetworkMgr networkmgr;
 int g_myid;
