@@ -52,6 +52,7 @@ bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, f
 bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU, float bL, float bR, float bT, float bB, float bD, float bU);
 void item_colliCHK();
 bool mov_coliiCHK();
+void bullet_colliCHK();
 void Setup_Block(); // 블럭 초기화
 void get_Block(); // 블록 출력
 
@@ -249,6 +250,8 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 					g_players[packet->id].speed = packet->speed;
 					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 					g_players[packet->id].yaw = packet->yaw;
+					g_players[packet->id].id = packet->id;
+
 				//	std::cout << g_players[packet->id].speed << std::endl;
 				}
 				else {
@@ -259,6 +262,8 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 					g_players[packet->id].speed = packet->speed;
 					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 					g_players[packet->id].yaw = packet->yaw;
+					g_players[packet->id].id = packet->id;
+
 				//	std::cout << g_players[packet->id].speed << std::endl;
 				}
 			}
@@ -746,6 +751,8 @@ void Timer(int Value)
 			cout << "얼음포탄" << endl;
 			if (sphere_[i].launch) {
 				sphere_[i].sphere_zz -= 1.0;
+
+				if (sphere_[i].sphere_zz < -2.0) bullet_colliCHK();
 				if (sphere_[i].sphere_zz == -15.0f) {
 					sphere_[i].launch = false;
 					sphere_[i].sphere_zz = 0;
@@ -756,6 +763,8 @@ void Timer(int Value)
 			if (sphere_[i].launch) {
 				cout << "일반포탄" << endl;
 				sphere_[i].sphere_zz -= 1.0;
+
+				if (sphere_[i].sphere_zz < -2.0) bullet_colliCHK();
 				if (sphere_[i].sphere_zz == -15.0f) {
 					sphere_[i].launch = false;
 					sphere_[i].sphere_zz = 0;
@@ -784,6 +793,7 @@ void Keyboard(unsigned char key, int x, int y)
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::UP;
 		//cout << "Input w" << endl;
+		cout << "본인 채력 확인" << g_players[g_myid].hp << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
@@ -882,6 +892,39 @@ bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU,
 }
 
 
+void bullet_colliCHK() {
+	glm::vec3 temp_position = glm::vec3(1.0);
+	sphere_position = spheres_pos * glm::vec4(temp_position, 1.0);
+
+	for (int i = 0; i < MAX_USER; i++)
+	{
+		// 상대방 정보로 비교
+		if (g_myid != g_players[i].id)	// 제작 중 확인해 보니 클라 id를 안받아오고 초기화 되어있는 상태 그대로임 -> 수정함
+		{
+			if (collision_Chk(
+				g_players[i].x - 0.8, g_players[i].x + 0.8, g_players[i].z - 0.3, g_players[i].z + 0.3,
+				sphere_position.x - 0.1, sphere_position.x + 0.1, sphere_position.z - 0.1, sphere_position.z + 0.1)
+				)
+			{
+				cout << "상대 위치" << g_players[i].x << " / " << g_players[i].z << endl;
+				cout << "내 위치" << g_players[g_myid].x << " / " << g_players[g_myid].z << endl;
+				cout << "총알 위치" << sphere_position.x << " / " << sphere_position.z << endl;
+				cout << g_players[i].id << "플레이어 피격 확인" << g_myid << endl;
+
+				g_players[i].hp -= 10;
+
+				CS_HIT_PACKET* packet = new CS_HIT_PACKET;
+				packet->type = CS_HIT;
+				packet->hp = g_players[i].hp;
+				packet->id = g_players[i].id;
+
+				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_HIT_PACKET));
+
+			}
+		}
+	}
+
+}
 
 void item_colliCHK() {
 	//체력 회복
