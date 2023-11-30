@@ -422,7 +422,7 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			case DIRECTION::UP: {
 				EnterCriticalSection(&g_clientThreadcs);
 				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + 0.3);
-				std::cout << socketinfo->id << "번 클라 w누를때 : " << g_players[socketinfo->id].GetZ() + 0.3 << std::endl;
+				//std::cout << socketinfo->id << "번 클라 w누를때 : " << g_players[socketinfo->id].GetZ() + 0.3 << std::endl;
 				tank_collid(g_players);
 				if (g_players[socketinfo->id].GetCollision())
 				{
@@ -437,7 +437,7 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			case DIRECTION::DOWN: {
 				EnterCriticalSection(&g_clientThreadcs);
 				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - 0.3);
-				std::cout << socketinfo->id << "번 클라 s누를때 : " << g_players[socketinfo->id].GetZ() - 0.3 << std::endl;
+				//std::cout << socketinfo->id << "번 클라 s누를때 : " << g_players[socketinfo->id].GetZ() - 0.3 << std::endl;
 				tank_collid(g_players);
 				if (g_players[socketinfo->id].GetCollision())
 				{
@@ -452,7 +452,7 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			case DIRECTION::LEFT:
 				EnterCriticalSection(&g_clientThreadcs);
 				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + 0.3);
-				std::cout << socketinfo->id << "번 클라 a누를때 : " << g_players[socketinfo->id].GetX() + 0.3 << std::endl;
+				//std::cout << socketinfo->id << "번 클라 a누를때 : " << g_players[socketinfo->id].GetX() + 0.3 << std::endl;
 				tank_collid(g_players);
 				if (g_players[socketinfo->id].GetCollision())
 				{
@@ -466,7 +466,7 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			case DIRECTION::RIGHT:
 				EnterCriticalSection(&g_clientThreadcs);
 				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - 0.3);
-				std::cout << socketinfo->id << "번 클라 d누를때 : " << g_players[socketinfo->id].GetX() - 0.3 << std::endl;
+				//std::cout << socketinfo->id << "번 클라 d누를때 : " << g_players[socketinfo->id].GetX() - 0.3 << std::endl;
 				tank_collid(g_players);
 				if (g_players[socketinfo->id].GetCollision())
 				{
@@ -545,18 +545,19 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				std::lock_guard<std::mutex> lock(g_Recvmutex);
 				heart[cspacket->num].exist = false;
 				g_players[socketinfo->id].SetHp(g_players[socketinfo->id].GetHp() + 20);
-				std::cout << g_players[socketinfo->id].GetHp() << std::endl;
+				std::cout << "힐팩 먹음" << std::endl;
 			}
 			if (cspacket->item == SPEEDUP) {	//스피드패킷 파란색 아이템
 				std::lock_guard<std::mutex> lock(g_Recvmutex);
 				wheel[cspacket->num].exist = false;
 				g_players[socketinfo->id].SetSpeed(g_players[socketinfo->id].GetSpeed() + 0.1);
-				std::cout << g_players[socketinfo->id].GetSpeed() << std::endl;
+				std::cout << "스피드팩 먹음" << std::endl;
 			}
 			if (cspacket->item == FREEZE) {		//얼음패킷 노란색 아이템
 				std::lock_guard<std::mutex> lock(g_Recvmutex);
 				ice[cspacket->num].exist = false;
 				sphere[g_bullet_num].isfreeze = true;
+				std::cout << "프리즈팩 먹음" << std::endl;
 			}
 			
 			SC_SET_ITEM_PACKET* packet = new SC_SET_ITEM_PACKET;
@@ -594,6 +595,42 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		//	std::cout << "아이템 변경 값 보내줌" << std::endl;
 		}
 					break;
+		case CS_RELOAD: {
+			std::cout << socketinfo->id << "번째 클라 재장전" << std::endl;
+			{
+				std::lock_guard<std::mutex> lock(g_Recvmutex);
+				for (int i = 0; i < BULLET_CNT; ++i) {
+					sphere[i].launch = false;
+					sphere[i].now_yaw = 0;
+					sphere[i].x = 0;
+					sphere[i].z = 0;
+					sphere[i].isfreeze = false;
+					g_bullet_num = 0;
+				}
+				g_players[socketinfo->id].setBulletCnt(BULLET_CNT);
+			}
+
+			SC_RELOAD_PACKET* scpacket = new SC_RELOAD_PACKET;
+			scpacket->type = SC_RELOAD;
+			scpacket->bullet_num = g_bullet_num;
+			int len = sizeof SC_RELOAD_PACKET;
+
+			{
+				std::lock_guard<std::mutex> lock(g_Recvmutex);
+				for (int i = 0; i < MAX_USER; ++i) {
+					if (g_players[i].GetOnline()) {
+						if (socketinfo->id == i) {
+							//EnterCriticalSection(&g_cs);
+							send(g_players[i].GetSocket(), reinterpret_cast<char*>(&len), sizeof(int), 0);
+							send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), len, 0);
+						}
+						//LeaveCriticalSection(&g_cs);
+					}
+				}
+			}
+			delete scpacket;
+		}
+					  break;
 		case CS_HIT: {
 			CS_HIT_PACKET* cspacket = reinterpret_cast<CS_HIT_PACKET*>(p);
 
@@ -602,7 +639,14 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				if (cspacket->id == g_players[i].GetId())
 				{
 					int tempHP = g_players[i].GetHp() - 10;
-					g_players[i].SetHp(tempHP);
+					if (tempHP <= 0) {
+						//플레이어 죽었으니까 처리
+						
+					}
+					else {
+						g_players[i].SetHp(tempHP);
+						std::cout << g_players[i].GetId() << "번쨰 플레이어 남은 체력 : " << g_players[i].GetHp() << std::endl;
+					}
 				}
 			}
 
