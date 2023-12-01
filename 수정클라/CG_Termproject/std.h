@@ -1,4 +1,5 @@
 #pragma once
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <gl/glew.h>
@@ -22,6 +23,7 @@
 #include <cstdlib>
 #include <windows.h>
 #include <random>
+
 
 
 #include <mmsystem.h>    

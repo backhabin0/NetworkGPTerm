@@ -803,3 +803,4 @@ void wall_collid(std::array<Session, MAX_USER>& players,short id)
 		}
 	}
 }
+
