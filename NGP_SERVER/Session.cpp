@@ -82,34 +82,34 @@ bool Session::GetReadyPlayer() const { return m_ready_player; }
 
 float Session::GetYaw() const { return m_yaw; }
 
-bool Session::collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB)
-{
-	if (bB <= aT || bT >= aB || bR <= aL || bL >= aR) return false;
-	return true;
-	std::cout << "collision" << std::endl;
-}
-
-bool Session::mov_coliiCHK(float x, float y, float z)
-{
-	for (int i = 0; i < 30; i++)
-	{
-		for (int j = 0; j < 30; j++)
-		{
-			if (Block[i][j].exist)
-			{
-				if (collision_Chk(Block[i][j].x - 1.0, Block[i][j].x + 1.0, Block[i][j].z - 2.0, Block[i][j].z + 2.0,
-					x - 0.5, x+ 0.5, z - 0.5, z + 0.5))
-				{
-
-					return true;
-				}
-			}
-
-		}
-
-	}
-	return false;
-}
+//bool Session::collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB)
+//{
+//	if (bB <= aT || bT >= aB || bR <= aL || bL >= aR) return false;
+//	return true;
+//	std::cout << "collision" << std::endl;
+//}
+//
+//bool Session::mov_coliiCHK(float x, float y, float z)
+//{
+//	for (int i = 0; i < 30; i++)
+//	{
+//		for (int j = 0; j < 30; j++)
+//		{
+//			if (Block[i][j].exist)
+//			{
+//				if (collision_Chk(Block[i][j].x - 1.0, Block[i][j].x + 1.0, Block[i][j].z - 2.0, Block[i][j].z + 2.0,
+//					x - 0.5, x+ 0.5, z - 0.5, z + 0.5))
+//				{
+//
+//					return true;
+//				}
+//			}
+//
+//		}
+//
+//	}
+//	return false;
+//}
 
 
 

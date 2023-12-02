@@ -52,7 +52,7 @@ bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, f
 bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU, float bL, float bR, float bT, float bB, float bD, float bU);
 void item_colliCHK();
 bool mov_coliiCHK();
-void bullet_colliCHK();
+void bullet_colliCHK(bool isfreeze_bullet);
 void Setup_Block(); // 블럭 초기화
 void get_Block(); // 블록 출력
 
@@ -78,6 +78,7 @@ struct Player_tank {
 
 	float yaw;
 	bool inGame = false;
+	bool isalive = true;
 }Player;
 
 Player_tank g_players[2];
@@ -241,32 +242,15 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 						break;
 		case SC_UPDATE: {	//여기는 초당 30프레임으로 계속 수신받는 월드업데이트 패킷이야
 			SC_UPDATE_PACKET* packet = reinterpret_cast<SC_UPDATE_PACKET*>(buf);
-			for (int i = 0; i < MAX_USER; ++i) {
-				if (g_myid == packet->id) {
-					g_players[packet->id].hp = packet->hp;
-					g_players[packet->id].x = packet->x;
-					g_players[packet->id].y = packet->y;
-					g_players[packet->id].z = packet->z;
-					g_players[packet->id].speed = packet->speed;
-					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
-					g_players[packet->id].yaw = packet->yaw;
-					g_players[packet->id].id = packet->id;
-
-				//	std::cout << g_players[packet->id].speed << std::endl;
-				}
-				else {
-					g_players[packet->id].hp = packet->hp;
-					g_players[packet->id].x = packet->x;
-					g_players[packet->id].y = packet->y;
-					g_players[packet->id].z = packet->z;
-					g_players[packet->id].speed = packet->speed;
-					g_players[packet->id].bullet_cnt = packet->bullet_cnt;
-					g_players[packet->id].yaw = packet->yaw;
-					g_players[packet->id].id = packet->id;
-
-				//	std::cout << g_players[packet->id].speed << std::endl;
-				}
-			}
+			g_players[packet->id].hp = packet->hp;
+			g_players[packet->id].x = packet->x;
+			g_players[packet->id].y = packet->y;
+			g_players[packet->id].z = packet->z;
+			g_players[packet->id].speed = packet->speed;
+			g_players[packet->id].bullet_cnt = packet->bullet_cnt;
+			g_players[packet->id].yaw = packet->yaw;
+			g_players[packet->id].id = packet->id;
+			
 		}
 					  break;
 		case SC_SET_ITEM: {
@@ -326,6 +310,15 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			cout << g_myid << "번 클라이언트 재장전 완료 남은 총알 수 : " << packet->bullet_num << endl;
 		}
 					  break;
+		case SC_DIE_PLAYER: {
+			SC_DIE_PACKET* packet = reinterpret_cast<SC_DIE_PACKET*>(buf);
+			int playerdie_id = packet->id;
+			g_players[playerdie_id].isalive = false;
+			cout << playerdie_id << "번 플레이어 사망" << endl;
+			cout << "게임을 종료합니다." << endl;
+			return 0;
+		}
+						  break;
 		}
 	}
 	return 0;
@@ -548,73 +541,75 @@ GLvoid drawObj() {
 	unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 	for (int index = 0; index < MAX_USER; ++index) {
 		//탱크
-		glBindVertexArray(VAO_map[0]);
-		glm::mat4 model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(g_players[index].x, g_players[index].y, g_players[index].z));
-		model = glm::rotate(model, glm::radians(rotate_bigY), glm::vec3(0.0, 1.0, 0.0));
-		modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
-		glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
-		int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
-		glUniform3f(objColorLocation, color[index].r, color[index].g, color[index].b);
+		if (g_players[index].isalive == true) {
+			glBindVertexArray(VAO_map[0]);
+			glm::mat4 model = glm::mat4(1.0);
+			model = glm::translate(model, glm::vec3(g_players[index].x, g_players[index].y, g_players[index].z));
+			model = glm::rotate(model, glm::radians(rotate_bigY), glm::vec3(0.0, 1.0, 0.0));
+			modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
+			int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+			glUniform3f(objColorLocation, color[index].r, color[index].g, color[index].b);
 
-		//35931 (vertex number)
-		//body 
-		glBindVertexArray(VAO_map[0]);
-		glDrawArrays(GL_TRIANGLES, 0, 21000);
-
-
-		glm::mat4 head = glm::mat4(1.0);
-		if (index == g_myid) {
-			head = glm::rotate(head, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
-		}
-		else {
-			head = glm::rotate(head, glm::radians(g_players[index].yaw), glm::vec3(0.0, 1.0, 0.0));
-		}
-		head = model * head;
-		glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(head));
-		//head
-		glBindVertexArray(VAO_map[0]);
-		glDrawArrays(GL_TRIANGLES, 21000, tank_object);
+			//35931 (vertex number)
+			//body 
+			glBindVertexArray(VAO_map[0]);
+			glDrawArrays(GL_TRIANGLES, 0, 21000);
 
 
-		//glDrawArrays(GL_TRIANGLES, 0, tank_object);
-
-		//-------------------------------------------------------------------------------------------------------------------------------
-		//맵
-		glBindVertexArray(VAO_map[1]);
-		glm::mat4 map_floor = glm::mat4(1.0);
-		map_floor = glm::translate(map_floor, glm::vec3(0, -1.5, 0));
-		map_floor = glm::scale(map_floor, glm::vec3(30.0, 0.1, 30.0));
-
-		unsigned int floor_model = glGetUniformLocation(shaderProgram, "modeltrans");
-		glUniformMatrix4fv(floor_model, 1, GL_FALSE, glm::value_ptr(map_floor));
-
-		unsigned int mapColor = glGetUniformLocation(shaderProgram, "objectColor");
-		glUniform3f(objColorLocation, 0.3, 0.3, 0.3);
-
-		glDrawArrays(GL_TRIANGLES, 0, map.m_vertices.size());
-
-
-		//장애물 - 블록
-		get_Block();
-
-
-		//--------------------------------------------------------------------------------------------------
-		//포탄
-		if (sphere_[index].launch) {
-			glm::mat4 spheres_scale = glm::mat4(1.0);
-			spheres_pos = glm::mat4(1.0);
-			if (!(g_players[index].x == 0 && g_players[index].y == 0 && g_players[index].z == 0)) { //탱크의 위치가 원점이 아닌 경우 
-				spheres_pos = glm::translate(spheres_pos, glm::vec3(sphere_[index].x, 0, sphere_[index].z)); //원점에서 회전 후 탱크의 이동으로 위치 변경 
+			glm::mat4 head = glm::mat4(1.0);
+			if (index == g_myid) {
+				head = glm::rotate(head, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
 			}
-			spheres_pos = glm::rotate(spheres_pos, glm::radians(sphere_[index].now_yaw), glm::vec3(0.0, 1.0, 0.0));
-			spheres_pos = glm::translate(spheres_pos, glm::vec3(0.0, 0.0, sphere_[index].sphere_zz));
-			spheres_scale = glm::scale(spheres_scale, glm::vec3(0.07, 0.07, 0.07));
-			spheres_pos = spheres_pos * spheres_scale;
-			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(spheres_pos));
-			glBindVertexArray(VAO_sphere);
-			glUniform3f(objColorLocation, 1.0, 1.0, 1.0);
-			glDrawArrays(GL_TRIANGLES, 0, sphere_object);
+			else {
+				head = glm::rotate(head, glm::radians(g_players[index].yaw), glm::vec3(0.0, 1.0, 0.0));
+			}
+			head = model * head;
+			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(head));
+			//head
+			glBindVertexArray(VAO_map[0]);
+			glDrawArrays(GL_TRIANGLES, 21000, tank_object);
+
+
+			//glDrawArrays(GL_TRIANGLES, 0, tank_object);
+
+			//-------------------------------------------------------------------------------------------------------------------------------
+			//맵
+			glBindVertexArray(VAO_map[1]);
+			glm::mat4 map_floor = glm::mat4(1.0);
+			map_floor = glm::translate(map_floor, glm::vec3(0, -1.5, 0));
+			map_floor = glm::scale(map_floor, glm::vec3(30.0, 0.1, 30.0));
+
+			unsigned int floor_model = glGetUniformLocation(shaderProgram, "modeltrans");
+			glUniformMatrix4fv(floor_model, 1, GL_FALSE, glm::value_ptr(map_floor));
+
+			unsigned int mapColor = glGetUniformLocation(shaderProgram, "objectColor");
+			glUniform3f(objColorLocation, 0.3, 0.3, 0.3);
+
+			glDrawArrays(GL_TRIANGLES, 0, map.m_vertices.size());
+
+
+			//장애물 - 블록
+			get_Block();
+
+
+			//--------------------------------------------------------------------------------------------------
+			//포탄
+			if (sphere_[index].launch) {
+				glm::mat4 spheres_scale = glm::mat4(1.0);
+				spheres_pos = glm::mat4(1.0);
+				if (!(g_players[index].x == 0 && g_players[index].y == 0 && g_players[index].z == 0)) { //탱크의 위치가 원점이 아닌 경우 
+					spheres_pos = glm::translate(spheres_pos, glm::vec3(sphere_[index].x, 0, sphere_[index].z)); //원점에서 회전 후 탱크의 이동으로 위치 변경 
+				}
+				spheres_pos = glm::rotate(spheres_pos, glm::radians(sphere_[index].now_yaw), glm::vec3(0.0, 1.0, 0.0));
+				spheres_pos = glm::translate(spheres_pos, glm::vec3(0.0, 0.0, sphere_[index].sphere_zz));
+				spheres_scale = glm::scale(spheres_scale, glm::vec3(0.07, 0.07, 0.07));
+				spheres_pos = spheres_pos * spheres_scale;
+				glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(spheres_pos));
+				glBindVertexArray(VAO_sphere);
+				glUniform3f(objColorLocation, 1.0, 1.0, 1.0);
+				glDrawArrays(GL_TRIANGLES, 0, sphere_object);
+			}
 		}
 	}
 		//---------------------------------------------------------------------------------------------------------
@@ -755,10 +750,10 @@ void Timer(int Value)
 	for (int i = 0; i < MAX_USER; ++i) {
 		if (sphere_[i].isfreeze == true) {
 			if (sphere_[i].launch) {
-				cout << "얼음포탄" << endl;
+			//	cout << "얼음포탄" << endl;
 				sphere_[i].sphere_zz -= 1.0;
 
-				if (sphere_[i].sphere_zz < -2.0) bullet_colliCHK();
+				if (sphere_[i].sphere_zz < -2.0) bullet_colliCHK(sphere_[i].isfreeze);
 				if (sphere_[i].sphere_zz == -15.0f) {
 					sphere_[i].launch = false;
 					sphere_[i].sphere_zz = 0;
@@ -767,10 +762,10 @@ void Timer(int Value)
 		}
 		else {
 			if (sphere_[i].launch) {
-				cout << "일반포탄" << endl;
+			//	cout << "일반포탄" << endl;
 				sphere_[i].sphere_zz -= 1.0;
 
-				if (sphere_[i].sphere_zz < -2.0) bullet_colliCHK();
+				if (sphere_[i].sphere_zz < -2.0) bullet_colliCHK(sphere_[i].isfreeze);
 				if (sphere_[i].sphere_zz == -15.0f) {
 					sphere_[i].launch = false;
 					sphere_[i].sphere_zz = 0;
@@ -902,7 +897,7 @@ bool collide_check_3(float aL, float aR, float aT, float aB, float aD, float aU,
 }
 
 
-void bullet_colliCHK() {
+void bullet_colliCHK(bool isfreeze_bullet) {
 	glm::vec3 temp_position = glm::vec3(1.0);
 	sphere_position = spheres_pos * glm::vec4(temp_position, 1.0);
 
@@ -927,10 +922,11 @@ void bullet_colliCHK() {
 				packet->type = CS_HIT;
 				packet->hp = g_players[i].hp;
 				packet->id = g_players[i].id;
-
+				packet->freeze_bullet = isfreeze_bullet;
 				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_HIT_PACKET));
 
 			}
+			break;
 		}
 	}
 
