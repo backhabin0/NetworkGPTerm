@@ -156,6 +156,10 @@ struct SC_DIE_PACKET {
 	int id;
 };
 
+struct SC_GAMESTART_PACKET {
+	char tpye;
+};
+
 struct SC_STATE_CHANGE_PACKET {
 	char type;
 	int id;
@@ -206,4 +210,5 @@ struct SC_RELOAD_PACKET {
 	char type;
 	int bullet_num;
 };
+
 #pragma pack (pop)

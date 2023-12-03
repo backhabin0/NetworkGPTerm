@@ -69,8 +69,8 @@ struct Sphere {
 
 struct Sphere sphere[BULLET_CNT]; // 포탄의 갯수 
 
-float temp_x;
-float temp_z;
+int temp_x;
+int temp_z;
 
 //==맵 블럭 초기화========================================================================================
 
@@ -160,28 +160,62 @@ void make_map() {
 
 void item_setup()
 {
-	for (int i = 0; i < 3; i++)
-	{
-		temp_x = uid(dre);
-		temp_z = uid(dre);
+	//for (int i = 0; i < 3; i++)
+	//{	
+	//		temp_x = uid(dre);
+	//		temp_z = uid(dre);
 
-		heart[i].x = temp_x;
-		heart[i].z = temp_z;
+	//		heart[i].x = temp_x;
+	//		heart[i].z = temp_z;
+	//	//-------------------------
 
-		//-------------------------
-		temp_x = uid(dre);
-		temp_z = uid(dre);
+	//		temp_x = uid(dre);
+	//		temp_z = uid(dre);
 
-		wheel[i].x = temp_x;
-		wheel[i].z = temp_z;
+	//		wheel[i].x = temp_x;
+	//		wheel[i].z = temp_z;
+	//	//-------------------------
+	//		temp_x = uid(dre);
+	//		temp_z = uid(dre);
 
-		//-------------------------
-		temp_x = uid(dre);
-		temp_z = uid(dre);
+	//		ice[i].x = temp_x;
+	//		ice[i].z = temp_z;
+	//		
+	//	
+	//}
+	heart[0].x = 15;
+	heart[0].z = 10;
 
-		ice[i].x = temp_x;
-		ice[i].z = temp_z;
-	}
+	heart[1].x = -15;
+	heart[1].z = -10;
+
+	heart[2].x = 0;
+	heart[2].z = 12;
+
+	wheel[0].x = -15;
+	wheel[0].z = 10;
+
+	wheel[1].x = 15;
+	wheel[1].z = -10;
+
+	wheel[2].x = 0;
+	wheel[2].z = -12;
+
+	ice[0].x = 20;
+	ice[0].z = 0;
+
+	ice[1].x = -20;
+	ice[1].z = 0;
+
+	ice[2].x = 0;
+	ice[2].z = 0;
+
+
+	/*heart[1].x = 10;
+	heart[1].z = 10;
+
+	heart[2].x = 15;
+	heart[2].z = 15;*/
 }
 
 std::array<Session, MAX_USER> g_players;
@@ -269,7 +303,7 @@ int main()
 
 		g_players[clientIndex].SetId(clientIndex);
 		g_players[clientIndex].SetAcceptPlayer(true);
-		g_players[clientIndex].SetX(10 * clientIndex);
+		g_players[clientIndex].SetX(10 * clientIndex);	//이부분 백하빈 코드
 		g_ClientNum++;
 
 		hThread = CreateThread(NULL, 0, ClientThread, (LPVOID)g_players[clientIndex].GetSocketInfo(), 0, 0);
@@ -283,7 +317,9 @@ int main()
 			//std::cout << "closeHandle()" << std::endl;
 			CloseHandle(hThread);
 		}
-		if (g_ClientNum == 2) break;
+		if (g_ClientNum == 2) {
+			break;
+		}
 
 	}
 	//인 게임
@@ -466,7 +502,7 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		char* p = reinterpret_cast<char*>(buf);
 		switch (p[0]) {
 		case CS_LOGIN: {
-			//std::cout << "접속 클라 아이디 : " << socketinfo->id << std::endl;
+			std::cout << "접속 클라 아이디 : " << socketinfo->id << std::endl;
 			CS_LOGIN_PACKET* cspacket = reinterpret_cast<CS_LOGIN_PACKET*>(p);
 			g_players[socketinfo->id].SetName(cspacket->name);
 			g_players[socketinfo->id].SetOnline(true);
@@ -512,8 +548,14 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		case CS_READY: {
 			CS_READY_PACKET* cspacket = reinterpret_cast<CS_READY_PACKET*>(p);
 			EnterCriticalSection(&g_clientThreadcs);
-			g_players[socketinfo->id].SetReadyPlayer(true);
-			std::cout << "몇번 클라가 레디 했나 - " << socketinfo->id << std::endl;
+			if (!g_players[socketinfo->id].GetReadyPlayer()) {
+				g_players[socketinfo->id].SetReadyPlayer(true);
+				std::cout << "몇번 클라가 레디 했나 - " << socketinfo->id << std::endl;
+			}
+			else {
+				g_players[socketinfo->id].SetReadyPlayer(false);
+				std::cout << "몇번 클라가 언레디 했나 - " << socketinfo->id << std::endl;
+			}
 			LeaveCriticalSection(&g_clientThreadcs);
 
 			//자신 포함 다른클라에게도 레디했다고 보내기
@@ -836,9 +878,20 @@ DWORD WINAPI ClientThread(LPVOID socket)
 
 		}
 				   break;
+		default: {
+			std::cout << "로그인 오류 - 클라이언트에서 프로세스를 강제종료하였습니다." << std::endl;
+			EnterCriticalSection(&g_clientThreadcs);
+			--g_ClientNum;
+			
+			/*g_players[clientIndex].SetId(clientIndex);
+			g_players[clientIndex].SetAcceptPlayer(true);*/
+			LeaveCriticalSection(&g_clientThreadcs);
+			return 0;
+		}
+			   break;
 		}
 		//버퍼,길이 초기화
-		memset(buf, 0, sizeof(buf));
+		memset(buf, 99, sizeof(buf));
 		len = 0;
 
 

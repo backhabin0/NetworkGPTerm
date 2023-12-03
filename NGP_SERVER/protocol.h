@@ -206,4 +206,6 @@ struct SC_RELOAD_PACKET {
 	char type;
 	int bullet_num;
 };
+
+
 #pragma pack (pop)
