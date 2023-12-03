@@ -51,7 +51,7 @@ struct Map_Block
 	float y_scale = 2.0;
 	float z_scale = 1.0;
 
-};Map_Block Block[30][30];
+}Block[30][30];
 
 struct Heart {
 	bool exist = true;
