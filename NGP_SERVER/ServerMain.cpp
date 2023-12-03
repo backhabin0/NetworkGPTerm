@@ -27,14 +27,31 @@ struct Map_Block
 	float y = 0.0;
 	float z = 0.0;
 
+struct COLOR
+{
+	float r = 1.0f;
+	float g = 1.0f;
+	float b = 1.0f;
+};
+
+struct Map_Block
+{
+	bool exist = false;
+	float height = 0;
+
+	COLOR b_color;
+
+	//좌표
+	float x = 0.0;
+	float y = 0.0;
+	float z = 0.0;
+
 	//크기
 	float x_scale = 1.0;
 	float y_scale = 2.0;
 	float z_scale = 1.0;
 
 };Map_Block Block[30][30];
-
-
 
 struct Heart {
 	bool exist = true;
@@ -69,8 +86,9 @@ struct Sphere {
 
 struct Sphere sphere[BULLET_CNT]; // 포탄의 갯수 
 
-float temp_x;
-float temp_z;
+int temp_x;
+int temp_z;
+
 //==맵 블럭 초기화========================================================================================
 
 void Setup_Block() {
@@ -156,30 +174,65 @@ void make_map() {
 	}
 
 }
+
 void item_setup()
 {
-	for (int i = 0; i < 3; i++)
-	{
-		temp_x = uid(dre);
-		temp_z = uid(dre);
+	//for (int i = 0; i < 3; i++)
+	//{	
+	//		temp_x = uid(dre);
+	//		temp_z = uid(dre);
 
-		heart[i].x = temp_x;
-		heart[i].z = temp_z;
+	//		heart[i].x = temp_x;
+	//		heart[i].z = temp_z;
+	//	//-------------------------
 
-		//-------------------------
-		temp_x = uid(dre);
-		temp_z = uid(dre);
+	//		temp_x = uid(dre);
+	//		temp_z = uid(dre);
 
-		wheel[i].x = temp_x;
-		wheel[i].z = temp_z;
+	//		wheel[i].x = temp_x;
+	//		wheel[i].z = temp_z;
+	//	//-------------------------
+	//		temp_x = uid(dre);
+	//		temp_z = uid(dre);
 
-		//-------------------------
-		temp_x = uid(dre);
-		temp_z = uid(dre);
+	//		ice[i].x = temp_x;
+	//		ice[i].z = temp_z;
+	//		
+	//	
+	//}
+	heart[0].x = 15;
+	heart[0].z = 10;
 
-		ice[i].x = temp_x;
-		ice[i].z = temp_z;
-	}
+	heart[1].x = -15;
+	heart[1].z = -10;
+
+	heart[2].x = 0;
+	heart[2].z = 12;
+
+	wheel[0].x = -15;
+	wheel[0].z = 10;
+
+	wheel[1].x = 15;
+	wheel[1].z = -10;
+
+	wheel[2].x = 0;
+	wheel[2].z = -12;
+
+	ice[0].x = 20;
+	ice[0].z = 0;
+
+	ice[1].x = -20;
+	ice[1].z = 0;
+
+	ice[2].x = 0;
+	ice[2].z = 0;
+
+
+	/*heart[1].x = 10;
+	heart[1].z = 10;
+
+	heart[2].x = 15;
+	heart[2].z = 15;*/
 }
 
 std::array<Session, MAX_USER> g_players;
@@ -187,6 +240,7 @@ int g_bullet_num;
 int g_ClientNum;
 bool g_AllPlayerReady = false;
 bool g_GameStart = false;
+bool g_GameEnd = false;
 CRITICAL_SECTION g_maincs;
 CRITICAL_SECTION g_clientThreadcs;
 std::mutex g_Recvmutex;
@@ -198,6 +252,7 @@ DWORD WINAPI do_send(LPVOID lpParam);
 void tank_collid(std::array<Session, MAX_USER>& players);
 void wall_collid(std::array<Session, MAX_USER>& players, short id);
 bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB);
+
 ///////////////////////////////////////////////////////////
 int main()
 {
@@ -205,7 +260,8 @@ int main()
 	Setup_Block();
 	make_map();
 	//맵생성
-
+	Setup_Block();
+	make_map();
 	InitializeCriticalSection(&g_maincs);
 	InitializeCriticalSection(&g_clientThreadcs);
 	int retval;
@@ -267,7 +323,7 @@ int main()
 
 		g_players[clientIndex].SetId(clientIndex);
 		g_players[clientIndex].SetAcceptPlayer(true);
-		g_players[clientIndex].SetX(10 * clientIndex);
+		g_players[clientIndex].SetX(10 * clientIndex);	//이부분 백하빈 코드
 		g_ClientNum++;
 
 		hThread = CreateThread(NULL, 0, ClientThread, (LPVOID)g_players[clientIndex].GetSocketInfo(), 0, 0);
@@ -281,7 +337,9 @@ int main()
 			//std::cout << "closeHandle()" << std::endl;
 			CloseHandle(hThread);
 		}
-		if (g_ClientNum == 2) break;
+		if (g_ClientNum == 2) {
+			break;
+		}
 
 	}
 	//인 게임
@@ -388,18 +446,22 @@ int main()
 		//std::cout << "아이템 생성" << std::endl;
 	}
 	/////////////////////////////////////////////////////////////////////////////////////////
+
+	std::cout << "게임 종료 루프 전 오니?" << std::endl;
+	//게임 종료
 	while (true) {
-		//std::cout << "게임시작!!" << std::endl;
-		Sleep(50000);
+		if (g_GameEnd) {
+			std::cout << "게임종료" << std::endl;
+			closesocket(listen_socket);
+			WSACleanup();
+			break;
+		}
 	}
 	DeleteCriticalSection(&g_maincs);
 	DeleteCriticalSection(&g_clientThreadcs);
-
-	closesocket(listen_socket);
-
-	WSACleanup();
 	return 0;
 }
+
 // 초당패킷을 계산하여 클라에게 계속 뿌려준다
 DWORD WINAPI do_send(LPVOID lpParam)
 {
@@ -412,6 +474,7 @@ DWORD WINAPI do_send(LPVOID lpParam)
 
 	std::chrono::steady_clock::time_point last_send_time = std::chrono::steady_clock::now();
 	while (true) {
+		//if (g_GameEnd) return 0;
 		if (!g_GameStart) continue;
 		auto current_time = std::chrono::steady_clock::now();
 		auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - last_send_time).count();
@@ -459,7 +522,7 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		char* p = reinterpret_cast<char*>(buf);
 		switch (p[0]) {
 		case CS_LOGIN: {
-			//std::cout << "접속 클라 아이디 : " << socketinfo->id << std::endl;
+			std::cout << "접속 클라 아이디 : " << socketinfo->id << std::endl;
 			CS_LOGIN_PACKET* cspacket = reinterpret_cast<CS_LOGIN_PACKET*>(p);
 			g_players[socketinfo->id].SetName(cspacket->name);
 			g_players[socketinfo->id].SetOnline(true);
@@ -505,8 +568,14 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		case CS_READY: {
 			CS_READY_PACKET* cspacket = reinterpret_cast<CS_READY_PACKET*>(p);
 			EnterCriticalSection(&g_clientThreadcs);
-			g_players[socketinfo->id].SetReadyPlayer(true);
-			std::cout << "몇번 클라가 레디 했나 - " << socketinfo->id << std::endl;
+			if (!g_players[socketinfo->id].GetReadyPlayer()) {
+				g_players[socketinfo->id].SetReadyPlayer(true);
+				std::cout << "몇번 클라가 레디 했나 - " << socketinfo->id << std::endl;
+			}
+			else {
+				g_players[socketinfo->id].SetReadyPlayer(false);
+				std::cout << "몇번 클라가 언레디 했나 - " << socketinfo->id << std::endl;
+			}
 			LeaveCriticalSection(&g_clientThreadcs);
 
 			//자신 포함 다른클라에게도 레디했다고 보내기
@@ -542,14 +611,14 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "탱크끼리 충돌" << std::endl;
-					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - 0.3);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - g_players[socketinfo->id].GetSpeed());
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
 				}
 				if (g_players[socketinfo->id].GetWallCollision())
 				{
 					std::cout << "탱크-벽 충돌" << std::endl;
-					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - 0.3);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - g_players[socketinfo->id].GetSpeed());
 					g_players[socketinfo->id].SetWallCollision(false);
 
 				}
@@ -558,21 +627,22 @@ DWORD WINAPI ClientThread(LPVOID socket)
 							  break;
 			case DIRECTION::DOWN: {
 				EnterCriticalSection(&g_clientThreadcs);
-				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - 0.3);
+				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - g_players[socketinfo->id].GetSpeed());
 				//std::cout << socketinfo->id << "번 클라 s누를때 : " << g_players[socketinfo->id].GetZ() - 0.3 << std::endl;
 				tank_collid(g_players);
-				wall_collid(g_players, socketinfo->id);
+				
+				(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "탱크끼리 충돌" << std::endl;
-					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + 0.3);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + g_players[socketinfo->id].GetSpeed());
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
 				}
 				if (g_players[socketinfo->id].GetWallCollision())
 				{
 					std::cout << "탱크-벽 충돌" << std::endl;
-					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + 0.3);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + g_players[socketinfo->id].GetSpeed());
 					g_players[socketinfo->id].SetWallCollision(false);
 
 				}
@@ -581,21 +651,21 @@ DWORD WINAPI ClientThread(LPVOID socket)
 								break;
 			case DIRECTION::LEFT:
 				EnterCriticalSection(&g_clientThreadcs);
-				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + 0.3);
+				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + g_players[socketinfo->id].GetSpeed());
 				//std::cout << socketinfo->id << "번 클라 a누를때 : " << g_players[socketinfo->id].GetX() + 0.3 << std::endl;
 				tank_collid(g_players);
 				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "탱크끼리 충돌" << std::endl;
-					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - 0.3);
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - g_players[socketinfo->id].GetSpeed());
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
 				}
 				if (g_players[socketinfo->id].GetWallCollision())
 				{
 					std::cout << "탱크-벽 충돌" << std::endl;
-					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - 0.3);
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - g_players[socketinfo->id].GetSpeed());
 					g_players[socketinfo->id].SetWallCollision(false);
 
 				}
@@ -603,21 +673,21 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				break;
 			case DIRECTION::RIGHT:
 				EnterCriticalSection(&g_clientThreadcs);
-				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - 0.3);
+				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - g_players[socketinfo->id].GetSpeed());
 				//std::cout << socketinfo->id << "번 클라 d누를때 : " << g_players[socketinfo->id].GetX() - 0.3 << std::endl;
 				tank_collid(g_players);
 				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "탱크끼리 충돌" << std::endl;
-					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + 0.3);
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + g_players[socketinfo->id].GetSpeed());
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
 				}
 				if (g_players[socketinfo->id].GetWallCollision())
 				{
 					std::cout << "탱크-벽 충돌" << std::endl;
-					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + 0.3);
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + g_players[socketinfo->id].GetSpeed());
 					g_players[socketinfo->id].SetWallCollision(false);
 
 				}
@@ -784,23 +854,64 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			{
 				if (cspacket->id == g_players[i].GetId())
 				{
-					int tempHP = g_players[i].GetHp() - 10;
-					if (tempHP <= 0) {
-						//플레이어 죽었으니까 처리
-						
+					if (!cspacket->freeze_bullet) {
+						std::lock_guard<std::mutex> lock(g_Recvmutex);
+						int tempHP = g_players[i].GetHp() - 10;
+						g_players[i].SetHp(tempHP);
+						std::cout << "일반포탄 체력감소 적용" << std::endl;
 					}
 					else {
-						g_players[i].SetHp(tempHP);
-						std::cout << g_players[i].GetId() << "번쨰 플레이어 남은 체력 : " << g_players[i].GetHp() << std::endl;
+						std::lock_guard<std::mutex> lock(g_Recvmutex);
+						int tempHP = g_players[i].GetHp() - 10;
+						g_players[i].SetSpeed(g_players[i].GetSpeed() - 0.1);
+						std::cout << "프리즈팩 포탄 이속감소 적용" << std::endl;
 					}
+					if (g_players[i].GetHp() == 0) {
+						//플레이어사망, 게임 종료 패킷 전송
+						//여기 오면 do_send도 이제 그만하고, recv도 그만한다. 또한 메인도 종료한다.
+						SC_DIE_PACKET* scpacket = new SC_DIE_PACKET;
+						scpacket->type = SC_DIE_PLAYER;
+						scpacket->id = i;
+						{
+							std::lock_guard<std::mutex> lock(g_Recvmutex);
+							for (int i = 0; i < MAX_USER; ++i) {
+								if (g_players[i].GetOnline()) {
+									//EnterCriticalSection(&g_cs);
+									send(g_players[i].GetSocket(), reinterpret_cast<char*>(&len), sizeof(int), 0);
+									send(g_players[i].GetSocket(), reinterpret_cast<char*>(scpacket), len, 0);
+									//LeaveCriticalSection(&g_cs);
+								}
+							}
+						}
+						delete scpacket;
+						std::cout << "사망패킷 전송, 게임종료 " << std::endl;
+						{
+							std::lock_guard<std::mutex> lock(g_Recvmutex);
+							g_GameEnd = true;
+						}
+						break;
+					}
+					std::cout << g_players[i].GetId() << "번쨰 플레이어 남은 체력 : " << g_players[i].GetHp() << std::endl;
+					std::cout << g_players[i].GetId() << "번쨰 플레이어 이동속도 : " << g_players[i].GetSpeed() << std::endl;
 				}
 			}
 
 		}
 				   break;
+		default: {
+			std::cout << "로그인 오류 - 클라이언트에서 프로세스를 강제종료하였습니다." << std::endl;
+			EnterCriticalSection(&g_clientThreadcs);
+			--g_ClientNum;
+			
+			/*g_players[clientIndex].SetId(clientIndex);
+			g_players[clientIndex].SetAcceptPlayer(true);*/
+			LeaveCriticalSection(&g_clientThreadcs);
+			return 0;
+		}
+			   break;
 		}
 		//버퍼,길이 초기화
-		memset(buf, 0, sizeof(buf));
+		memset(buf, 99, sizeof(buf));
 		len = 0;
 
 
@@ -829,7 +940,7 @@ bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, f
 	return true;
 }
 
-void wall_collid(std::array<Session, MAX_USER>& players,short id)
+void wall_collid(std::array<Session, MAX_USER>& players, short id)
 {
 	int id_ = static_cast<int>(id);
 	for (int i = 0; i < 30; i++)

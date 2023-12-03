@@ -24,8 +24,8 @@
 #define SERVERPORT 9000
 #define BUFSIZE    512
 
-enum DATA_TYPE { ACCEPT, SEND, RECV };
-enum COMP_TYPE { OP_ATTACK, OP_STATE_CAHGE, OP_MOVE };
+//enum DATA_TYPE { ACCEPT, SEND, RECV };
+//enum COMP_TYPE { OP_ATTACK, OP_STATE_CAHGE, OP_MOVE };
 enum ITEM { HEAL, SPEEDUP, FREEZE };
 enum DIRECTION { UP, DOWN, LEFT, RIGHT };
 constexpr int MAX_USER = 2;
@@ -48,7 +48,7 @@ constexpr char SC_LOGIN_OK = 1;
 constexpr char SC_LOGIIN_FAIL = 2;
 constexpr char SC_READY_OK = 3;
 constexpr char SC_MOVE_OBJECT = 4;
-constexpr char SC_DIE_OBJECT = 5;
+constexpr char SC_DIE_PLAYER = 5;
 constexpr char SC_STATE_CHANGE = 6;
 constexpr char SC_ATTACK = 7;
 constexpr char SC_LOGOUT = 8;
@@ -115,6 +115,7 @@ struct CS_HIT_PACKET {
 	char type;
 	int id;
 	int hp;
+	bool freeze_bullet;
 };
 
 struct SC_LOGIN_INFO_PACKET {
@@ -155,6 +156,7 @@ struct SC_MOVE_PACKET {
 
 struct SC_DIE_PACKET {
 	char type;
+	int id;
 };
 
 struct SC_GAMESTART_PACKET {
@@ -204,4 +206,6 @@ struct SC_RELOAD_PACKET {
 	char type;
 	int bullet_num;
 };
+
+
 #pragma pack (pop)

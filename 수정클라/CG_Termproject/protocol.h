@@ -49,7 +49,7 @@ constexpr char SC_LOGIN_OK = 1;
 constexpr char SC_LOGIIN_FAIL = 2;
 constexpr char SC_READY_OK = 3;
 constexpr char SC_MOVE_OBJECT = 4;
-constexpr char SC_DIE_OBJECT = 5;
+constexpr char SC_DIE_PLAYER = 5;
 constexpr char SC_STATE_CHANGE = 6;
 constexpr char SC_ATTACK = 7;
 constexpr char SC_LOGOUT = 8;
@@ -106,6 +106,7 @@ struct CS_HIT_PACKET {
 	char type;
 	int id;
 	int hp;
+	bool freeze_bullet;
 };
 
 struct CS_LOGOUT_PACKET {
@@ -152,6 +153,11 @@ struct SC_MOVE_PACKET {
 
 struct SC_DIE_PACKET {
 	char type;
+	int id;
+};
+
+struct SC_GAMESTART_PACKET {
+	char tpye;
 };
 
 struct SC_STATE_CHANGE_PACKET {
@@ -204,4 +210,5 @@ struct SC_RELOAD_PACKET {
 	char type;
 	int bullet_num;
 };
+
 #pragma pack (pop)

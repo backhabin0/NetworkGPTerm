@@ -1,6 +1,7 @@
 #include "std.h"
 #include "NetworkMgr.h"
 
+//const char* SERVERIP = "192.168.61.163";
 const char* SERVERIP = "127.0.0.1";
 
 NetworkMgr::NetworkMgr()

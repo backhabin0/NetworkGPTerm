@@ -22,7 +22,8 @@
 #include <cstdlib>
 #include <windows.h>
 #include <random>
-
+#include <chrono>
+#include <future> // std::async, std::future
 
 #include <mmsystem.h>    
 #pragma comment(lib,"winmm.lib") 
