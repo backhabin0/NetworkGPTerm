@@ -107,6 +107,7 @@ struct CS_HIT_PACKET {
 	int id;
 	int hp;
 	bool freeze_bullet;
+	bool result;
 };
 
 struct CS_LOGOUT_PACKET {
@@ -192,6 +193,7 @@ struct SC_UPDATE_PACKET {
 	float speed;
 	short bullet_cnt;
 	float yaw;
+	bool result;
 };
 
 struct SC_SET_ITEM_PACKET {

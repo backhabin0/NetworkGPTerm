@@ -13,6 +13,8 @@ Session::Session()
 	m_accept_player = false;
 	m_ready_player = false;
 	m_collision = false;
+	m_win = false;
+
 }
 
 Session::~Session()

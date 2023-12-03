@@ -1,7 +1,8 @@
 #include "objReader.h"
 #include "NetworkMgr.h"
 #include <mutex>
-
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 GLvoid Resize(int w, int h);
@@ -14,7 +15,7 @@ void make_fragmentShaders(); //프래그먼트 세이더 만들기
 void make_shaderProgram(); //세이더 프로그램 생성
 void InitBuffer();
 char* filetobuf(const char* file);
- 
+void InitTexture(const char* filename, unsigned int *texture);
 
 GLint height, width; //윈도우창 크기 
 GLuint shaderProgram; //세이더 프로그램 이름
@@ -33,7 +34,8 @@ float scene_[]
 
 int hp = 100;
 int u_hpscalex = 5;
-struct OBJ {
+typedef struct OBJ {
+	unsigned int texture;
 	GLuint VAO, VBO_pos, VBO_normal, VBO_uv;
 	std::vector<glm::vec3> m_vertices;
 	std::vector<glm::vec2> m_uvs;
@@ -43,8 +45,12 @@ OBJ tankbody;
 OBJ block;
 OBJ map;
 OBJ item;
-OBJ sphere;
+OBJ bullet;
 OBJ hpblock;
+OBJ startpage;
+OBJ menu_hp;
+OBJ winpage;
+OBJ losepage;
 //랜덤출력
 using namespace std;
 
@@ -67,6 +73,7 @@ bool mov_coliiCHK();
 bool bullet_colliCHK(bool isfreeze_bullet);
 void Setup_Block(); // 블럭 초기화
 void get_Block(); // 블록 출력
+void bulletWallCollid();
 
 //색상
 struct COLOR
@@ -77,8 +84,6 @@ struct COLOR
 };
 COLOR color[2];
 
-//탱크
-GLint tank_object = loadOBJ("try.obj", tankbody.m_vertices, tankbody.m_uvs, tankbody.m_normals);
 struct Player_tank {
 	int id;
 	int hp = 100;
@@ -86,7 +91,7 @@ struct Player_tank {
 	float scalex = 3;
 	float speed;
 	short bullet_cnt;
-
+	bool result;
 	float yaw;
 	bool inGame = false;
 	bool isalive = true;
@@ -100,9 +105,13 @@ float rotate_bigY = 180; // 객체 자전
 
 //----------------------------------------------------------------------------------------------------------
 // 블록/맵
-GLint mapobject = loadOBJ("cube.obj", map.m_vertices, map.m_uvs, map.m_normals);
-GLint blockobject = loadOBJ("cube.obj", block.m_vertices, block.m_uvs, block.m_normals);
-
+GLint mapobject = loadOBJ("Resource/cube.obj", map.m_vertices, map.m_uvs, map.m_normals);
+GLint blockobject = loadOBJ("Resource/cube.obj", block.m_vertices, block.m_uvs, block.m_normals);
+//탱크
+GLint tank_object = loadOBJ("Resource/try.obj", tankbody.m_vertices, tankbody.m_uvs, tankbody.m_normals);
+GLint sphere_object = loadOBJ("Resource/sphere.obj", bullet.m_vertices, bullet.m_uvs, bullet.m_normals);
+GLint itemobject = loadOBJ("Resource/cube.obj", item.m_vertices, item.m_uvs, item.m_normals);
+GLint hpbar_ = loadOBJ("Resource/cube.obj", hpblock.m_vertices, hpblock.m_uvs, hpblock.m_normals);
 
 // 장애물
 struct Map_Block
@@ -127,7 +136,7 @@ struct Map_Block
 Map_Block Block[30][30];
 
 bool chaseOn = true;
-
+bool bulletCollid = true;
 //----------------------------------------------------------------------------------------------------------
 //카메라
 struct cameraLoc
@@ -176,10 +185,6 @@ glm::mat4 spheres_pos;
 glm::vec4 sphere_position; //포탄의 위치 (충돌처리용)
 
 
-GLint sphere_object = loadOBJ("sphere.obj", sphere.m_vertices, sphere.m_uvs, sphere.m_normals);
-GLint itemobject = loadOBJ("cube.obj", item.m_vertices,item.m_uvs,item.m_normals);
-GLint hpbar_ = loadOBJ("cube.obj", hpblock.m_vertices,hpblock.m_uvs,hpblock.m_normals);
-
 struct Heart {
 	bool exist = true;
 	float x = 3.0;
@@ -209,7 +214,7 @@ int time_god = 0;
 bool collide_god = false;
 int time_ice = 0;
 bool collide_ice = false;
-
+bool startgame = false;
 //=======================================================================================================
 
 bool start = false;
@@ -225,6 +230,7 @@ bool g_not_reloadbullet = true;	// 이 변수는 장전하기 전 초기에 10발 주어졌을때 
 CRITICAL_SECTION cs;
 bool g_setItem = false;
 bool g_loginOk = false;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI Timer(LPVOID lpParam)
 {
@@ -288,8 +294,10 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			g_players[packet->id].bullet_cnt = packet->bullet_cnt;
 			g_players[packet->id].yaw = packet->yaw;
 			g_players[packet->id].id = packet->id;
-			
+			g_players[packet->id].result = packet->result;
+			//std::cout << packet->id << "번 클라이언트 체력 : " << g_players[packet->id].hp << std::endl;
 		}
+
 					  break;
 		case SC_SET_ITEM: {
 			SC_SET_ITEM_PACKET* packet = reinterpret_cast<SC_SET_ITEM_PACKET*>(buf);
@@ -402,6 +410,15 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	make_shaderProgram(); //--- 세이더 프로그램 만들기
 
 	InitBuffer();
+	InitTexture("Texture/T_grass.png", &block.texture);
+	InitTexture("Texture/T_lifehart.png", &hpblock.texture);
+	InitTexture("Texture/T_grass.png", &map.texture);
+	InitTexture("Texture/startpage2.png", &startpage.texture);
+	InitTexture("Texture/T_tank.png", &tankbody.texture);
+	InitTexture("Texture/T_item1.png", &item.texture);
+	InitTexture("Texture/menu_hp3.png", &menu_hp.texture);
+	InitTexture("Texture/winpage.png", &winpage.texture);
+	InitTexture("Texture/losepage.png", &losepage.texture);
 
 	//call back
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
@@ -409,7 +426,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	glutKeyboardFunc(Keyboard);
 	glutMouseFunc(Mouse);//마우스 콜백
 	glutPassiveMotionFunc(Motion);//마우스 움직임
-	glutTimerFunc(30, Timer, 1); //애니매이션 타이머
+	glutTimerFunc(100, Timer, 1); //애니매이션 타이머
 	//Recv쓰레드 생성 - 서버로부터 데이터 수신 계속 받을거얌
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	HANDLE TimerThread = CreateThread(NULL, 0, Timer, 0, 0, 0);
@@ -436,51 +453,57 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 
 //====================================================================================================
 
-GLuint VAO_map[4], VBO_mapPos[4], VBO_mapnormal[4];
-GLuint VAO_sphere, VBO_spherepos, VBO_spherenormal;
-GLuint VAO_item[4], VBO_itemPos[4], VBO_itemnormal[4];
-
 GLvoid InitBuffer() {
 
 	//---------------------------------------------------------------------------------------------------------------------------
 	//탱크 버퍼
 
-	glGenVertexArrays(1, &VAO_map[0]);
-	glBindVertexArray(VAO_map[0]);
+	glGenVertexArrays(1, &tankbody.VAO);
+	glBindVertexArray(tankbody.VAO);
 
-	glGenBuffers(1, &VBO_mapPos[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[0]);
+	glGenBuffers(1, &tankbody.VBO_pos);
+	glBindBuffer(GL_ARRAY_BUFFER, tankbody.VBO_pos);
 	glBufferData((GL_ARRAY_BUFFER), tankbody.m_vertices.size() * sizeof(glm::vec3), &tankbody.m_vertices[0], GL_STATIC_DRAW);
-	GLint pAttribute = glGetAttribLocation(shaderProgram, "aPos");
-	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
-	glEnableVertexAttribArray(pAttribute);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &VBO_mapnormal[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[0]);
+	glGenBuffers(1, &tankbody.VBO_normal);
+	glBindBuffer(GL_ARRAY_BUFFER, tankbody.VBO_normal);
 	glBufferData(GL_ARRAY_BUFFER, tankbody.m_normals.size() * sizeof(glm::vec3), &tankbody.m_normals[0], GL_STATIC_DRAW);
-	GLint nAttribute = glGetAttribLocation(shaderProgram, "aNormal");
-	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-	glEnableVertexAttribArray(nAttribute);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+	glEnableVertexAttribArray(1);
 
-
+	glGenBuffers(1, &tankbody.VBO_uv);
+	glBindBuffer(GL_ARRAY_BUFFER, tankbody.VBO_uv);
+	glBufferData(GL_ARRAY_BUFFER, tankbody.m_uvs.size() * sizeof(glm::vec2), &tankbody.m_uvs.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+	glEnableVertexAttribArray(2);
 
 	//맵 버퍼---------------------------------------------------------------------------------------------------------------------------
 
-	glGenVertexArrays(1, &VAO_map[1]);
-	glBindVertexArray(VAO_map[1]);
+	glGenVertexArrays(1, &map.VAO);
+	glBindVertexArray(map.VAO);
 
-	glGenBuffers(1, &VBO_mapPos[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[1]);
+	glGenBuffers(1, &map.VBO_pos);
+	glBindBuffer(GL_ARRAY_BUFFER, map.VBO_pos);
 	glBufferData((GL_ARRAY_BUFFER), map.m_vertices.size() * sizeof(glm::vec3), &map.m_vertices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &VBO_mapnormal[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[1]);
+	glGenBuffers(1, &map.VBO_normal);
+	glBindBuffer(GL_ARRAY_BUFFER, map.VBO_normal);
 	glBufferData(GL_ARRAY_BUFFER, map.m_normals.size() * sizeof(glm::vec3), &map.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
-	//hp바
+
+	glGenBuffers(1, &map.VBO_uv);
+	glBindBuffer(GL_ARRAY_BUFFER, map.VBO_uv);
+	glBufferData(GL_ARRAY_BUFFER, map.m_uvs.size() * sizeof(glm::vec2), &map.m_uvs.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+	glEnableVertexAttribArray(2);
+
+	//hp바--------------------------------------------------------------------------------------------------------------------------------
+	
 	glGenVertexArrays(1, &hpblock.VAO);
 	glGenBuffers(1, &hpblock.VBO_pos);
 	glGenBuffers(1, &hpblock.VBO_normal);
@@ -490,68 +513,115 @@ GLvoid InitBuffer() {
 	glBindVertexArray(hpblock.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, hpblock.VBO_pos);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
-	GLint pAttribute8 = glGetAttribLocation(shaderProgram, "aPos");
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, hpblock.VBO_normal);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
-	GLint nAttribute8 = glGetAttribLocation(shaderProgram, "aNormal");
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	glBindBuffer(GL_ARRAY_BUFFER, hpblock.VBO_uv);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	//시작화면-------------------------------------------------------------------------------------------------------------------------
+	glGenVertexArrays(1, &startpage.VAO);
+	glGenBuffers(1, &startpage.VBO_pos);
+	glGenBuffers(1, &startpage.VBO_normal);
+	glGenBuffers(1, &startpage.VBO_uv);
 
-	//블록
-	glGenVertexArrays(1, &VAO_map[2]);
-	glBindVertexArray(VAO_map[2]);
+	glUseProgram(shaderProgram);
+	glBindVertexArray(startpage.VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, startpage.VBO_pos);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &VBO_mapPos[2]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapPos[2]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, startpage.VBO_normal);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, startpage.VBO_uv);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	//블록-----------------------------------------------------------------------------------------------------------------------------
+	glGenVertexArrays(1, &block.VAO);
+	glBindVertexArray(block.VAO);
+
+	glGenBuffers(1, &block.VBO_pos);
+	glBindBuffer(GL_ARRAY_BUFFER, block.VBO_pos);
 	glBufferData((GL_ARRAY_BUFFER), block.m_vertices.size() * sizeof(glm::vec3), &block.m_vertices[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &VBO_mapnormal[2]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_mapnormal[2]);
-	glBufferData(GL_ARRAY_BUFFER, tankbody.m_normals.size() * sizeof(glm::vec3), &tankbody.m_normals[0], GL_STATIC_DRAW);
+	glGenBuffers(1, &block.VBO_normal);
+	glBindBuffer(GL_ARRAY_BUFFER, block.VBO_normal);
+	glBufferData(GL_ARRAY_BUFFER, block.m_normals.size() * sizeof(glm::vec3), &block.m_normals[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
 
 	//-------------------------------------------------------------------------------------------------------------------------------
 	//포탄
-	glGenVertexArrays(1, &VAO_sphere);
-	glBindVertexArray(VAO_sphere);
+	glGenVertexArrays(1, &bullet.VAO);
+	glBindVertexArray(bullet.VAO);
 
-	glGenBuffers(1, &VBO_spherepos);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_spherepos);
-	glBufferData((GL_ARRAY_BUFFER), sphere.m_vertices.size() * sizeof(glm::vec3), &sphere.m_vertices[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
-	glEnableVertexAttribArray(pAttribute);
+	glGenBuffers(1, &bullet.VBO_pos);
+	glBindBuffer(GL_ARRAY_BUFFER, bullet.VBO_pos);
+	glBufferData((GL_ARRAY_BUFFER), bullet.m_vertices.size() * sizeof(glm::vec3), &bullet.m_vertices[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &VBO_spherenormal);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_spherenormal);
-	glBufferData(GL_ARRAY_BUFFER, sphere.m_normals.size() * sizeof(glm::vec3), &sphere.m_normals[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-	glEnableVertexAttribArray(nAttribute);
+	glGenBuffers(1, &bullet.VBO_normal);
+	glBindBuffer(GL_ARRAY_BUFFER, bullet.VBO_normal);
+	glBufferData(GL_ARRAY_BUFFER, bullet.m_normals.size() * sizeof(glm::vec3), &bullet.m_normals[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+	glEnableVertexAttribArray(1);
 
 	//아이템 -------------------------------------------------------------------------------------------------------------------
-	glGenVertexArrays(1, &VAO_item[0]);
-	glBindVertexArray(VAO_item[0]);
+	glGenVertexArrays(1, &item.VAO);
+	glBindVertexArray(item.VAO);
 
-	glGenBuffers(1, &VBO_itemPos[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_itemPos[0]);
+	glGenBuffers(1, &item.VBO_pos);
+	glBindBuffer(GL_ARRAY_BUFFER, item.VBO_pos);
 	glBufferData((GL_ARRAY_BUFFER), item.m_vertices.size() * sizeof(glm::vec3), &item.m_vertices[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(pAttribute, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
-	glEnableVertexAttribArray(pAttribute);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &VBO_itemnormal[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_itemnormal[0]);
+	glGenBuffers(1, &item.VBO_normal);
+	glBindBuffer(GL_ARRAY_BUFFER, item.VBO_normal);
 	glBufferData(GL_ARRAY_BUFFER, item.m_normals.size() * sizeof(glm::vec3), &item.m_normals[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(nAttribute, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-	glEnableVertexAttribArray(nAttribute);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+	glEnableVertexAttribArray(1);
+
+	//menu_hp-------------------------------------------------------------------------------------------------------------------
+	glGenVertexArrays(1, &menu_hp.VAO);
+	glGenBuffers(1, &menu_hp.VBO_pos);
+	glGenBuffers(1, &menu_hp.VBO_normal);
+	glGenBuffers(1, &menu_hp.VBO_uv);
+
+	glUseProgram(shaderProgram);
+	glBindVertexArray(menu_hp.VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, menu_hp.VBO_pos);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
 
+	glBindBuffer(GL_ARRAY_BUFFER, menu_hp.VBO_normal);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, menu_hp.VBO_uv);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(scene_), scene_, GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 	// -------------------------------------------------------------------------------------------------------------------------
 	//light
 	glUseProgram(shaderProgram);
@@ -604,10 +674,14 @@ void start_page() {
 GLvoid drawObj() {
 	int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
 	unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
-	for (int index = 0; index < MAX_USER; ++index) {
-		//탱크
-		if (g_players[index].isalive == true) {
-			glBindVertexArray(VAO_map[0]);
+	if (startgame) {
+		for (int index = 0; index < MAX_USER; ++index) {
+			//탱크
+			if (g_players[index].isalive == true)
+			{
+
+			}
+			glBindVertexArray(tankbody.VAO);
 			glm::mat4 model = glm::mat4(1.0);
 			model = glm::translate(model, glm::vec3(g_players[index].x, g_players[index].y, g_players[index].z));
 			model = glm::rotate(model, glm::radians(rotate_bigY), glm::vec3(0.0, 1.0, 0.0));
@@ -615,10 +689,11 @@ GLvoid drawObj() {
 			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
 			int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 			glUniform3f(objColorLocation, color[index].r, color[index].g, color[index].b);
-
+			glBindTexture(GL_TEXTURE_2D, tankbody.texture);
+			//glDrawArrays(GL_TRIANGLES, 0, tankbody.m_vertices.size());
 			//35931 (vertex number)
 			//body 
-			glBindVertexArray(VAO_map[0]);
+			glBindVertexArray(tankbody.VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 21000);
 
 
@@ -632,7 +707,7 @@ GLvoid drawObj() {
 			head = model * head;
 			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(head));
 			//head
-			glBindVertexArray(VAO_map[0]);
+			glBindVertexArray(tankbody.VAO);
 			glDrawArrays(GL_TRIANGLES, 21000, tank_object);
 
 
@@ -650,8 +725,10 @@ GLvoid drawObj() {
 
 			unsigned int mapColor = glGetUniformLocation(shaderProgram, "objectColor");
 			glUniform3f(objColorLocation, 0.3, 0.3, 0.3);
-
+			
+			glBindTexture(GL_TEXTURE_2D, map.texture);
 			glDrawArrays(GL_TRIANGLES, 0, map.m_vertices.size());
+
 
 
 			//장애물 - 블록
@@ -671,12 +748,13 @@ GLvoid drawObj() {
 				spheres_scale = glm::scale(spheres_scale, glm::vec3(0.07, 0.07, 0.07));
 				spheres_pos = spheres_pos * spheres_scale;
 				glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(spheres_pos));
-				glBindVertexArray(VAO_sphere);
+				glBindVertexArray(bullet.VAO);
 				glUniform3f(objColorLocation, 1.0, 1.0, 1.0);
-				glDrawArrays(GL_TRIANGLES, 0, sphere_object);
+				glBindTexture(GL_TEXTURE_2D, item.texture);
+				glDrawArrays(GL_TRIANGLES, 0, item.m_vertices.size());
+				glDrawArrays(GL_TRIANGLES, 0, itemobject);
 			}
 		}
-	}
 		//---------------------------------------------------------------------------------------------------------
 		//아이템
 
@@ -688,8 +766,10 @@ GLvoid drawObj() {
 					hearts = glm::translate(hearts, glm::vec3(heart[i].x, 0, heart[i].z));
 					hearts = glm::scale(hearts, glm::vec3(0.2, 0.2, 0.2));
 					glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(hearts));
-					glBindVertexArray(VAO_item[0]);
+					glBindVertexArray(item.VAO);
 					glUniform3f(objColorLocation, 1.0, 0.0, 0.0);
+					//glBindTexture(GL_TEXTURE_2D, item.texture);
+					//glDrawArrays(GL_TRIANGLES, 0, item.m_vertices.size());
 					glDrawArrays(GL_TRIANGLES, 0, itemobject);
 				}
 			}
@@ -700,8 +780,10 @@ GLvoid drawObj() {
 					velocity = glm::translate(velocity, glm::vec3(speedup[i].x, 0, speedup[i].z));
 					velocity = glm::scale(velocity, glm::vec3(0.2, 0.2, 0.2));
 					glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(velocity));
-					glBindVertexArray(VAO_item[0]);
+					glBindVertexArray(item.VAO);
 					glUniform3f(objColorLocation, 0.0, 0.0, 1.0);
+					//glBindTexture(GL_TEXTURE_2D, map.texture);
+					//glDrawArrays(GL_TRIANGLES, 0, map.m_vertices.size());
 					glDrawArrays(GL_TRIANGLES, 0, itemobject);
 				}
 			}
@@ -712,12 +794,15 @@ GLvoid drawObj() {
 					freeze = glm::translate(freeze, glm::vec3(ice[i].x, 0, ice[i].z));
 					freeze = glm::scale(freeze, glm::vec3(0.2, 0.2, 0.2));
 					glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(freeze));
-					glBindVertexArray(VAO_item[0]);
+					glBindVertexArray(item.VAO);
 					glUniform3f(objColorLocation, 1.0, 1.0, 0.0);
+			/*		glBindTexture(GL_TEXTURE_2D, item.texture);
+					glDrawArrays(GL_TRIANGLES, 0, item.m_vertices.size());*/
 					glDrawArrays(GL_TRIANGLES, 0, itemobject);
 				}
 			}
-		
+
+		}
 	}
 }
 
@@ -795,41 +880,153 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		//충돌 처리용 포탄 위치 기록
 		glm::vec3 temp_position = glm::vec3(1.0);
 		sphere_position = spheres_pos * glm::vec4(temp_position, 1.0);
+		if (startgame == false) {
+			//startpage
+			{glViewport(0, 0, width, height);
+			view = glm::mat4(1.0f);
+			glm::vec3 map_pos = glm::vec3(0.0, 0.0, 1.0); //--- 카메라 위치
+			glm::vec3 mapDir = glm::vec3(0.0, 0.0f, 0.0f); //--- 카메라 바라보는 방향
+			glm::vec3 mapUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
+			view = glm::lookAt(map_pos, mapDir, mapUp);
 
+			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+			unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewTransform");
+			glBindVertexArray(startpage.VAO);
+			glm::mat4 model = glm::mat4(1.0);
+			model = glm::translate(model, glm::vec3(0, 0, 0));
+			model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0, 1.0, 0.0));
+			model = glm::scale(model, glm::vec3(3.5,3.5,3.5));
 
+			int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
+			unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+			glUniform3f(objColorLocation, 1.0, 1.0, 1.0);
+			
+			glBindTexture(GL_TEXTURE_2D, startpage.texture);
+			glBindVertexArray(startpage.VAO);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glUseProgram(shaderProgram); }
+		}
+		//menu_hp
+		{
+				{glViewport(0, 0, width, height);
+				view = glm::mat4(1.0f);
+				glm::vec3 map_pos = glm::vec3(0.0, 0.0, 1.0); //--- 카메라 위치
+				glm::vec3 mapDir = glm::vec3(0.0, 0.0f, 0.0f); //--- 카메라 바라보는 방향
+				glm::vec3 mapUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
+				view = glm::lookAt(map_pos, mapDir, mapUp);
 
+				glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+				unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewTransform");
+				glBindVertexArray(hpblock.VAO);
+				glm::mat4 model = glm::mat4(1.0);
+				model = glm::translate(model, glm::vec3(-1, 3, -5));
+				model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.0, 1.0, 0.0));
+				model = glm::scale(model, glm::vec3(0.5,0.5,0.5));
+
+				int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+				glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
+				unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+				glUniform3f(objColorLocation, 1.0, 0.0, 0.0);
+
+				glBindTexture(GL_TEXTURE_2D, menu_hp.texture);
+				glBindVertexArray(menu_hp.VAO);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+				glUseProgram(shaderProgram); }
+		}
+		int hpbar = g_players[g_myid].hp / 25;
+		if (g_players[g_myid].hp == 0) {
+			g_players->result = false;
+		}
 		//hpbar
-		{glViewport(0, 0, width, height);
-		view = glm::mat4(1.0f);
-		glm::vec3 map_pos = glm::vec3(0.0, 0.0, 1.0); //--- 카메라 위치
-		glm::vec3 mapDir = glm::vec3(0.0, 0.0f, 0.0f); //--- 카메라 바라보는 방향
-		glm::vec3 mapUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
-		view = glm::lookAt(map_pos, mapDir, mapUp);
+		for (int i{}; i < hpbar; ++i) {
+			{glViewport(0, 0, width, height);
+			view = glm::mat4(1.0f);
+			glm::vec3 map_pos = glm::vec3(0.0, 0.0, 1.0); //--- 카메라 위치
+			glm::vec3 mapDir = glm::vec3(0.0, 0.0f, 0.0f); //--- 카메라 바라보는 방향
+			glm::vec3 mapUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
+			view = glm::lookAt(map_pos, mapDir, mapUp);
 
-		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
-		unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewTransform");
-		glBindVertexArray(VAO_map[0]);
-		glm::mat4 model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0, 3, -5));
-		model = glm::rotate(model, glm::radians(rotate_bigY), glm::vec3(0.0, 1.0, 0.0));
-		model = glm::scale(model, glm::vec3(u_hpscalex, 0.2, 0.5));
+			glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+			unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewTransform");
+			glBindVertexArray(hpblock.VAO);
+			glm::mat4 model = glm::mat4(1.0);
+			model = glm::translate(model, glm::vec3(i*0.5-0.5, 3, -5));
+			model = glm::rotate(model, glm::radians(rotate_bigY), glm::vec3(0.0, 1.0, 0.0));
+			model = glm::scale(model, glm::vec3(0.5,0.5,0.5));
 
-		int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
-		glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
-		unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
-		glUniform3f(objColorLocation, 1.0,0.0,0.0);
-		//texture->InitTexture("hpbar2.png", &hpblock.texture);
-		//glBindTexture(GL_TEXTURE_2D, scene.texture);
-		glBindVertexArray(hpblock.VAO);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glUseProgram(shaderProgram); }
+			int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
+			unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+			glUniform3f(objColorLocation, 1.0, 0.0, 0.0);
 
-
-
+			glBindTexture(GL_TEXTURE_2D, hpblock.texture);
+			glBindVertexArray(hpblock.VAO);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glUseProgram(shaderProgram); }
 
 
+		}
+		if (g_players[0].result == true || g_players[1].result == true) {	//gameend
+			if (g_players[g_myid].result) { //죽음
+				{glViewport(0, 0, width, height);
+				view = glm::mat4(1.0f);
+				glm::vec3 map_pos = glm::vec3(0.0, 0.0, 1.0); //--- 카메라 위치
+				glm::vec3 mapDir = glm::vec3(0.0, 0.0f, 0.0f); //--- 카메라 바라보는 방향
+				glm::vec3 mapUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
+				view = glm::lookAt(map_pos, mapDir, mapUp);
 
+				glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+				unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewTransform");
+				glBindVertexArray(startpage.VAO);
+				glm::mat4 model = glm::mat4(1.0);
+				model = glm::translate(model, glm::vec3(0, 0, 0));
+				model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0, 1.0, 0.0));
+				model = glm::scale(model, glm::vec3(3.5, 3.5, 3.5));
+
+				int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+				glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
+				unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+				glUniform3f(objColorLocation, 1.0, 1.0, 1.0);
+
+				glBindTexture(GL_TEXTURE_2D, losepage.texture);
+				glBindVertexArray(startpage.VAO);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+				glUseProgram(shaderProgram); }
+			}
+			else {
+				{glViewport(0, 0, width, height);
+				view = glm::mat4(1.0f);
+				glm::vec3 map_pos = glm::vec3(0.0, 0.0, 1.0); //--- 카메라 위치
+				glm::vec3 mapDir = glm::vec3(0.0, 0.0f, 0.0f); //--- 카메라 바라보는 방향
+				glm::vec3 mapUp = glm::vec3(0.0f, 1.0f, 0.0f); //--- 카메라 위쪽 방향
+				view = glm::lookAt(map_pos, mapDir, mapUp);
+
+				glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+				unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewTransform");
+				glBindVertexArray(startpage.VAO);
+				glm::mat4 model = glm::mat4(1.0);
+				model = glm::translate(model, glm::vec3(0, 0, 0));
+				model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0, 1.0, 0.0));
+				model = glm::scale(model, glm::vec3(3.5, 3.5, 3.5));
+
+				int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
+				glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
+				unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+				glUniform3f(objColorLocation, 1.0, 1.0, 1.0);
+
+				glBindTexture(GL_TEXTURE_2D, winpage.texture);
+				glBindVertexArray(startpage.VAO);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+				glUseProgram(shaderProgram); }
+			}
+
+		}
 		//-------------------------------------------------------------------------------------------------
 	}
 	glutSwapBuffers(); // 화면에 출력하기
@@ -841,13 +1038,14 @@ void Timer(int Value)
 {
 	
 	item_colliCHK();
-
+	bulletWallCollid();
 	//포탄 
-	for (int i = 0; i < MAX_USER; ++i) {
-		if (sphere_[i].isfreeze == true) {
-			if (sphere_[i].launch) {
-				cout << "얼음포탄" << endl;
-				sphere_[i].sphere_zz -= 1.0;
+	if (bulletCollid) {
+		for (int i = 0; i < MAX_USER; ++i) {
+			if (sphere_[i].isfreeze == true) {
+				if (sphere_[i].launch) {
+					cout << "얼음포탄" << endl;
+					sphere_[i].sphere_zz -= 1.0;
 
 				if (sphere_[i].sphere_zz < -2.0)
 				{
@@ -885,7 +1083,7 @@ void Timer(int Value)
 	}
 
 	//hpbar();
-	glutTimerFunc(30, Timer, 1);
+	glutTimerFunc(100, Timer, 1);
 	glutPostRedisplay();
 
 }
@@ -961,6 +1159,14 @@ void Keyboard(unsigned char key, int x, int y)
 		break;
 		//디버깅용
 
+	case 'u':
+		if (g_players[g_myid].result) {
+			cout << "TRUE" << endl;
+		}
+		else {
+			cout << "FALSE" << endl;
+		}
+		break;
 		//종료
 	case 'q': {
 		if (!g_want_bullet_reload) g_want_bullet_reload = true;
@@ -975,12 +1181,8 @@ void Keyboard(unsigned char key, int x, int y)
 		glutLeaveMainLoop();
 		break;
 
-
-		//디버깅용 hp
 	case 'h':
-		cout << hp << endl;
-		hp -= 10;
-		u_hpscalex -= hp * 0.0001;
+		startgame = true;
 		break;
 	}
 
@@ -1052,6 +1254,8 @@ bool bullet_colliCHK(bool isfreeze_bullet) {
 				packet->type = CS_HIT;
 				packet->hp = g_players[i].hp;
 				packet->id = g_players[i].id;
+				packet->result = g_players[i].result;
+
 				packet->freeze_bullet = isfreeze_bullet;
 				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_HIT_PACKET));
 				return true;
@@ -1071,7 +1275,7 @@ void item_colliCHK() {
 			if (collision_Chk(heart[i].x - 0.3, heart[i].x + 0.3, heart[i].z - 0.3, heart[i].z + 0.3,
 				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
 			{
-				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
+				PlaySound(TEXT("Sound/item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
 				//heart[i].exist = false;
 				//Player.hp += 30;
 
@@ -1095,7 +1299,7 @@ void item_colliCHK() {
 			if (collision_Chk(speedup[i].x - 0.3, speedup[i].x + 0.3, speedup[i].z - 0.3, speedup[i].z + 0.3,
 				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
 			{
-				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
+				PlaySound(TEXT("Sound/item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
 				//speedup[i].exist = false;
 				//speed = 0.7;
 
@@ -1117,7 +1321,7 @@ void item_colliCHK() {
 			if (collision_Chk(ice[i].x - 0.3, ice[i].x + 0.3, ice[i].z - 0.3, ice[i].z + 0.3,
 				g_players[g_myid].x - 0.3, g_players[g_myid].x + 0.3, g_players[g_myid].z - 0.3, g_players[g_myid].z + 0.3))
 			{
-				PlaySound(TEXT("item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
+				PlaySound(TEXT("Sound/item.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
 				//ice[i].exist = false;
 				//speed = 0.7;
 
@@ -1309,8 +1513,8 @@ void get_Block() {
 
 	Setup_Block();
 	make_map();
-
-	glBindVertexArray(VAO_map[2]);
+	glBindTexture(GL_TEXTURE_2D, block.texture);
+	glBindVertexArray(block.VAO);
 
 	for (int i = 0; i < 30; i++)
 	{
@@ -1327,9 +1531,10 @@ void get_Block() {
 				glUniformMatrix4fv(block_model, 1, GL_FALSE, glm::value_ptr(map_block));
 
 				unsigned int blockColor = glGetUniformLocation(shaderProgram, "objectColor");
-				glUniform3f(blockColor, Block[i][j].b_color.r, Block[i][j].b_color.g, Block[i][j].b_color.b);
-
+				glUniform3f(blockColor,1.,1.,1.);
+				
 				glDrawArrays(GL_TRIANGLES, 0, block.m_vertices.size());
+
 			}
 
 
@@ -1466,4 +1671,46 @@ void convertDeviceXY2OpenglXY(int x, int y, float* xpos, float* ypos)
 	int h = height;
 	*xpos = (float)((x - (float)w / 2.0) * (float)(1.0 / (float)(w / 2.0)));
 	*ypos = -(float)((y - (float)h / 2.0) * (float)(1.0 / (float)(h / 2.0)));
+}
+
+void bulletWallCollid() {
+	for (int i = 0; i < 30; i++)
+	{
+		for (int j = 0; j < 30; j++)
+		{
+			if (Block[i][j].exist)
+			{
+				if (collision_Chk(Block[i][j].x - 1.0, Block[i][j].x + 1.0, Block[i][j].z - 2.0, Block[i][j].z + 2.0,
+					sphere_position.x - 0.1, sphere_position.x + 0.1, sphere_position.z - 0.1, sphere_position.z + 0.1))
+				{
+					bulletCollid = false;
+				}
+			}
+		}
+	}
+}
+void InitTexture(const char* filename, unsigned int* texture)
+{
+
+	glGenTextures(1, texture);
+	stbi_set_flip_vertically_on_load(true);
+	glBindTexture(GL_TEXTURE_2D, *texture);
+	// 텍스처 wrapping/filtering 옵션 설정(현재 바인딩된 텍스처 객체에 대해)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// 텍스처 로드 및 생성
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
 }

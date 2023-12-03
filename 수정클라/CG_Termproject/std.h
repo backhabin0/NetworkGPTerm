@@ -1,4 +1,5 @@
 #pragma once
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <gl/glew.h>
@@ -24,6 +25,7 @@
 #include <random>
 #include <chrono>
 #include <future> // std::async, std::future
+
 
 #include <mmsystem.h>    
 #pragma comment(lib,"winmm.lib") 

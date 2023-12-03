@@ -487,6 +487,7 @@ DWORD WINAPI do_send(LPVOID lpParam)
 					scpacket->x = g_players[i].GetX();
 					scpacket->y = g_players[i].GetY();
 					scpacket->z = g_players[i].GetZ();
+					scpacket->result = g_players[i].GetResult();
 					scpacket->speed = g_players[i].GetSpeed();
 					scpacket->bullet_cnt = g_players[i].GetBulletCnt();
 					scpacket->yaw = g_players[i].GetYaw();
@@ -529,7 +530,7 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			int namelen = strlen(cspacket->name);
 			//std::cout << "클라로부터 얻어온 아이디 : " << g_players[socketinfo->id].GetName() << std::endl;
 			
-			//g_player에 초기 정보 받아오기
+			//g_player에 초기 정보 받아오기SC_UPDATE_PACKET
 			g_players[socketinfo->id].SetHp(HP);
 			g_players[socketinfo->id].setBulletCnt(BULLET_CNT);
 			g_players[socketinfo->id].SetSpeed(SPEED);
@@ -950,7 +951,7 @@ void wall_collid(std::array<Session, MAX_USER>& players, short id)
 			if (Block[i][j].exist)
 			{
 				if (collision_Chk(Block[i][j].x - 1.0, Block[i][j].x + 1.0, Block[i][j].z - 2.0, Block[i][j].z + 2.0,
-					players[id_].GetX() - 0.7, players[id_].GetX() + 0.7, players[id_].GetZ() - 0.7, players[id_].GetZ() + 0.7))
+					players[id_].GetX() - 0.8, players[id_].GetX() + 0.8, players[id_].GetZ() - 0.5, players[id_].GetZ() + 0.5))
 				{
 					players[id_].SetWallCollision(true);
 				}
@@ -958,3 +959,4 @@ void wall_collid(std::array<Session, MAX_USER>& players, short id)
 		}
 	}
 }
+

@@ -188,6 +188,8 @@ struct SC_UPDATE_PACKET {
 	float speed;
 	short bullet_cnt;
 	float yaw;
+	bool result;
+	bool gameend;
 };
 
 struct SC_SET_ITEM_PACKET {
