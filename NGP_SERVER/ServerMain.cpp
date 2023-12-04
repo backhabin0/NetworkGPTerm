@@ -15,24 +15,24 @@ struct COLOR
 	float g = 1.0f;
 	float b = 1.0f;
 };
-struct Map_Block
-{
-	bool exist = false;
-	float height = 0;
-
-	COLOR b_color;
-
-	//ÁÂÇ¥
-	float x = 0.0;
-	float y = 0.0;
-	float z = 0.0;
-
-struct COLOR
-{
-	float r = 1.0f;
-	float g = 1.0f;
-	float b = 1.0f;
-};
+//struct Map_Block
+//{
+//	bool exist = false;
+//	float height = 0;
+//
+//	COLOR b_color;
+//
+//	//ÁÂÇ¥
+//	float x = 0.0;
+//	float y = 0.0;
+//	float z = 0.0;
+//
+//struct COLOR
+//{
+//	float r = 1.0f;
+//	float g = 1.0f;
+//	float b = 1.0f;
+//};
 
 struct Map_Block
 {

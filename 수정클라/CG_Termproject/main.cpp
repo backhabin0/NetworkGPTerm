@@ -715,7 +715,7 @@ GLvoid drawObj() {
 
 			//-------------------------------------------------------------------------------------------------------------------------------
 			//맵
-			glBindVertexArray(VAO_map[1]);
+			glBindVertexArray(map.VAO);
 			glm::mat4 map_floor = glm::mat4(1.0);
 			map_floor = glm::translate(map_floor, glm::vec3(0, -1.5, 0));
 			map_floor = glm::scale(map_floor, glm::vec3(30.0, 0.1, 30.0));
@@ -970,8 +970,8 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 
 
 		}
-		if (g_players[0].result == true || g_players[1].result == true) {	//gameend
-			if (g_players[g_myid].result) { //죽음
+		if (g_players[0].isalive == false || g_players[1].isalive == false) {	//gameend
+			if (g_players[g_myid].isalive==false) { //죽음
 				{glViewport(0, 0, width, height);
 				view = glm::mat4(1.0f);
 				glm::vec3 map_pos = glm::vec3(0.0, 0.0, 1.0); //--- 카메라 위치
@@ -1034,9 +1034,9 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 
 //====================================================================================================
 //애니메이션
-void Timer(int Value) 
+void Timer(int Value)
 {
-	
+
 	item_colliCHK();
 	bulletWallCollid();
 	//포탄 
@@ -1047,45 +1047,46 @@ void Timer(int Value)
 					cout << "얼음포탄" << endl;
 					sphere_[i].sphere_zz -= 1.0;
 
-				if (sphere_[i].sphere_zz < -2.0)
-				{
-					if (bullet_colliCHK(sphere_[i].isfreeze))
+					if (sphere_[i].sphere_zz < -2.0)
 					{
+						if (bullet_colliCHK(sphere_[i].isfreeze))
+						{
+							sphere_[i].launch = false;
+							sphere_[i].sphere_zz = 0;
+						}
+					}
+					if (sphere_[i].sphere_zz == -15.0f) {
 						sphere_[i].launch = false;
 						sphere_[i].sphere_zz = 0;
 					}
 				}
-				if (sphere_[i].sphere_zz == -15.0f) {
-					sphere_[i].launch = false;
-					sphere_[i].sphere_zz = 0;
-				}
 			}
-		}
-		else {
-			if (sphere_[i].launch) {
-				cout << "일반포탄" << endl;
-				sphere_[i].sphere_zz -= 1.0;
+			else {
+				if (sphere_[i].launch) {
+					cout << "일반포탄" << endl;
+					sphere_[i].sphere_zz -= 1.0;
 
-				if (sphere_[i].sphere_zz < -2.0)
-				{
-					if (bullet_colliCHK(sphere_[i].isfreeze))
+					if (sphere_[i].sphere_zz < -2.0)
 					{
+						if (bullet_colliCHK(sphere_[i].isfreeze))
+						{
+							sphere_[i].launch = false;
+							sphere_[i].sphere_zz = 0;
+						}
+					}
+					if (sphere_[i].sphere_zz == -15.0f) {
 						sphere_[i].launch = false;
 						sphere_[i].sphere_zz = 0;
 					}
 				}
-				if (sphere_[i].sphere_zz == -15.0f) {
-					sphere_[i].launch = false;
-					sphere_[i].sphere_zz = 0;
-				}
 			}
 		}
+
+		//hpbar();
+		glutTimerFunc(100, Timer, 1);
+		glutPostRedisplay();
+
 	}
-
-	//hpbar();
-	glutTimerFunc(100, Timer, 1);
-	glutPostRedisplay();
-
 }
 
 
@@ -1187,7 +1188,9 @@ void Keyboard(unsigned char key, int x, int y)
 	}
 
 	glutPostRedisplay();
+
 }
+
 //==충돌 체크=============================================================================================
 bool collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB) {
 
