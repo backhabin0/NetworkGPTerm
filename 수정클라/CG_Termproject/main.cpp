@@ -989,7 +989,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 
 				int modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
 				glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
-				unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
+				unsigned int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색.
 				glUniform3f(objColorLocation, 1.0, 1.0, 1.0);
 
 				glBindTexture(GL_TEXTURE_2D, losepage.texture);
