@@ -92,10 +92,7 @@ struct Player_tank {
 	float speed;
 	short bullet_cnt;
 	bool result;
-
 	float yaw;
-	float bodyYaw;
-
 	bool inGame = false;
 	bool isalive = true;
 }Player;
@@ -105,7 +102,6 @@ Player_tank g_players[2];
 int g_attackid;
 
 float rotate_bigY = 180; // 객체 자전
-float pi = 3.141592;
 
 //----------------------------------------------------------------------------------------------------------
 // 블록/맵
@@ -141,29 +137,6 @@ Map_Block Block[30][30];
 
 bool chaseOn = true;
 bool bulletCollid = true;
-
-//----------------------------------------------------------------------------------------------------------
-//  마우스
-struct Mouse_Handling {
-	bool left_button;
-	bool first_mouse_pos_flag = true;
-
-	float first_mouse_pos_x;
-	float first_mouse_pos_y;
-
-	float delta_mouse_x;
-	float delta_mouse_y;
-
-	float mouse_sensitivity = 179;
-
-	float drgree_x = 90;
-	float drgree_y = -30;
-
-	float mouse_x;
-	float mouse_y;
-};
-Mouse_Handling MH;
-
 //----------------------------------------------------------------------------------------------------------
 //카메라
 struct cameraLoc
@@ -177,13 +150,6 @@ struct cameraLoc
 
 int position = 1; //카메라 변경
 
-struct Camera_Option {
-	float camera_distance = 3.0;
-
-	float camera_delta_y = 0;
-
-};
-Camera_Option CO;
 
 //카메라
 glm::vec3 cameraPos = glm::vec3(CamPos.x, CamPos.y, CamPos.z); //--- 카메라 위치
@@ -193,7 +159,7 @@ glm::vec3 cameraFront = glm::vec3(0.0, 0.0, -1.0);
 
 
 //마우스 콜백
-float pitch, yaw, bodyYaw;
+float pitch, yaw;
 bool firstMouse = true;
 float xpos, ypos;
 float lastX, lastY;
@@ -329,8 +295,6 @@ DWORD WINAPI RecvThread(LPVOID lpParam)
 			g_players[packet->id].yaw = packet->yaw;
 			g_players[packet->id].id = packet->id;
 			g_players[packet->id].result = packet->result;
-			g_players[packet->id].bodyYaw = packet->bodyYaw;
-
 			//std::cout << packet->id << "번 클라이언트 체력 : " << g_players[packet->id].hp << std::endl;
 		}
 
@@ -451,7 +415,7 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	InitTexture("Texture/T_grass.png", &map.texture);
 	InitTexture("Texture/startpage2.png", &startpage.texture);
 	InitTexture("Texture/T_tank.png", &tankbody.texture);
-	//InitTexture("Texture/T_item1.png", &item.texture);
+	InitTexture("Texture/T_item1.png", &item.texture);
 	InitTexture("Texture/menu_hp3.png", &menu_hp.texture);
 	InitTexture("Texture/winpage.png", &winpage.texture);
 	InitTexture("Texture/losepage.png", &losepage.texture);
@@ -459,14 +423,10 @@ void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	//call back
 	glutDisplayFunc(drawScene); // 출력 함수의 지정
 	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
-
-	glutKeyboardFunc(Keyboard);	//키보드 콜백
-
+	glutKeyboardFunc(Keyboard);
 	glutMouseFunc(Mouse);//마우스 콜백
 	glutPassiveMotionFunc(Motion);//마우스 움직임
-	
 	glutTimerFunc(100, Timer, 1); //애니매이션 타이머
-
 	//Recv쓰레드 생성 - 서버로부터 데이터 수신 계속 받을거얌
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	HANDLE TimerThread = CreateThread(NULL, 0, Timer, 0, 0, 0);
@@ -725,20 +685,11 @@ GLvoid drawObj() {
 			glm::mat4 model = glm::mat4(1.0);
 			model = glm::translate(model, glm::vec3(g_players[index].x, g_players[index].y, g_players[index].z));
 			model = glm::rotate(model, glm::radians(rotate_bigY), glm::vec3(0.0, 1.0, 0.0));
-
-			if (index == g_myid) {
-				model = glm::rotate(model, glm::radians(bodyYaw), glm::vec3(0.0, 1.0, 0.0));
-			}
-			else {
-				model = glm::rotate(model, glm::radians(g_players[index].bodyYaw), glm::vec3(0.0, 1.0, 0.0));
-			}
-
 			modeltrans = glGetUniformLocation(shaderProgram, "modeltrans");
 			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(model));
 			int objColorLocation = glGetUniformLocation(shaderProgram, "objectColor"); //--- object Color값 전달: (1.0, 0.5, 0.3)의 색
 			glUniform3f(objColorLocation, color[index].r, color[index].g, color[index].b);
 			glBindTexture(GL_TEXTURE_2D, tankbody.texture);
-
 			//glDrawArrays(GL_TRIANGLES, 0, tankbody.m_vertices.size());
 			//35931 (vertex number)
 			//body 
@@ -755,7 +706,6 @@ GLvoid drawObj() {
 			}
 			head = model * head;
 			glUniformMatrix4fv(modeltrans, 1, GL_FALSE, glm::value_ptr(head));
-
 			//head
 			glBindVertexArray(tankbody.VAO);
 			glDrawArrays(GL_TRIANGLES, 21000, tank_object);
@@ -883,19 +833,13 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 
 		//뷰 변환
 		glm::mat4 view = glm::mat4(1.0f);
-
-		//카메라 위치
-		cameraPos.x = g_players[g_myid].x;
+		cameraPos.x = g_players[g_myid].x; //카메라 위치를 탱크 위치로 고정
 		cameraPos.z = g_players[g_myid].z;
-		cameraPos.y = g_players[g_myid].y + 1.5;
-
-
-		cameraDirection.x = g_players[g_myid].x - sin((bodyYaw)*pi / 180);
-		cameraDirection.y = g_players[g_myid].y + 1.3;
-		cameraDirection.z = g_players[g_myid].z - cos((bodyYaw)*pi / 180);
-
+		cameraPos.y = CamPos.y; //카메라를 위쪽(y축)으로 조정
+		cameraUp = glm::vec3(0.0, 0.0, -1.0);
 
 		cameraUp = glm::vec3(0.0, 1.0, 0.0);
+
 
 		//1인칭
 		glViewport(0, 0, width, height);
@@ -912,7 +856,7 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 		}
 		//3인칭
 		else if (position == 1) {
-			view = glm::lookAt(cameraPos, cameraDirection, cameraUp);
+			view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		}
 
 		/*view = glm::lookAt(cameraPos, cameraDirection, cameraUp);*/
@@ -1095,9 +1039,6 @@ void Timer(int Value)
 
 	item_colliCHK();
 	bulletWallCollid();
-	
-	MH.first_mouse_pos_flag = true;
-
 	//포탄 
 	if (bulletCollid) {
 		for (int i = 0; i < MAX_USER; ++i) {
@@ -1155,18 +1096,13 @@ void Keyboard(unsigned char key, int x, int y)
 {
 	switch (key) {
 
-		//---------------------------------------------------------		
 		//탱크 이동
 	case 'w': {
-
-		cout << g_players[0].bodyYaw << endl;
-		cout << g_players[1].bodyYaw << endl;
-
-
 		CS_MOVE_PACKET* packet = new CS_MOVE_PACKET;
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::UP;
-		packet->bodyYaw = bodyYaw;
+		//cout << "Input w" << endl;
+		//cout << "본인 채력 확인" << g_players[g_myid].hp << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
@@ -1175,7 +1111,6 @@ void Keyboard(unsigned char key, int x, int y)
 		CS_MOVE_PACKET* packet = new CS_MOVE_PACKET;
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::LEFT;
-		packet->bodyYaw = bodyYaw;
 		//cout << "Input a" << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
@@ -1185,7 +1120,6 @@ void Keyboard(unsigned char key, int x, int y)
 		CS_MOVE_PACKET* packet = new CS_MOVE_PACKET;
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::DOWN;
-		packet->bodyYaw = bodyYaw;
 		//cout << "Input s" << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
@@ -1195,14 +1129,11 @@ void Keyboard(unsigned char key, int x, int y)
 		CS_MOVE_PACKET* packet = new CS_MOVE_PACKET;
 		packet->type = CS_MOVE;
 		packet->direction = DIRECTION::RIGHT;
-		packet->bodyYaw = bodyYaw;
 		//cout << "Input d" << endl;
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_MOVE_PACKET));
 		delete packet;
 	}
 			break;
-	//---------------------------------------------------------		
-	// 레디
 	case 'r': {
 		if (g_AllPlayerReady) {
 			cout << "이미 게임이 시작되어 레디키를 누를 수 없습니다." << endl;
@@ -1221,89 +1152,13 @@ void Keyboard(unsigned char key, int x, int y)
 		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_READY_PACKET));
 		delete packet;
 	}
-
-	//---------------------------------------------------------		
-	// 탱크 머리 회전
-	case 'q': {
-		yaw += 10;
-
-		if (yaw > 89.0f)
-			yaw = 89.0f;
-		if (yaw < -89.0f)
-			yaw = -89.0f;
-
-
-		CS_YAW_PACKET* packet = new CS_YAW_PACKET;
-		packet->type = CS_YAW;
-		packet->yaw = yaw;
-		packet->bodyYaw = MH.drgree_x;
-		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_YAW_PACKET));
-		delete packet;
-	}	break;
-
-	case 'e': {
-		yaw -= 10;
-
-		if (yaw > 89.0f)
-			yaw = 89.0f;
-		if (yaw < -89.0f)
-			yaw = -89.0f;
-
-
-		CS_YAW_PACKET* packet = new CS_YAW_PACKET;
-		packet->type = CS_YAW;
-		packet->yaw = yaw;
-		packet->bodyYaw = MH.drgree_x;
-		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_YAW_PACKET));
-		delete packet;
-	} break;
 			break;
-	
-	//---------------------------------------------------------	
-	//재장전
-
-	case 'f': {
-		if (!g_want_bullet_reload) g_want_bullet_reload = true;
-		g_not_reloadbullet = false;
-		CS_RELOAD_PACKET* packet = new CS_RELOAD_PACKET;
-		packet->type = CS_RELOAD;
-		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_RELOAD_PACKET));
-		delete packet;
-	}
-			break;
-
-	//포탄 발사
-	case VK_SPACE:
-	{
-		if (g_setItem) {
-			if (g_players[g_myid].bullet_cnt > 0) {
-				//sphere_[k].now_yaw = yaw;
-				//sphere_[k].launch = true;
-				PlaySound(TEXT("gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
-
-				CS_ATTACK_PACKET* packet = new CS_ATTACK_PACKET;
-				packet->tpye = CS_ATTACK;
-				packet->now_yaw = yaw + bodyYaw;
-				packet->x = g_players[g_myid].x;
-				packet->z = g_players[g_myid].z;
-				packet->isshoot = true;
-
-				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof CS_ATTACK_PACKET);
-				delete packet;
-			}
-		}
-	}
-	break;
-			
-	//---------------------------------------------------------	
-	//게임 시작
+			//게임 시작
 	case '1':
 		if (start) start = false;
 		else start = true;
 		break;
-	case 'h':
-		startgame = true;
-		break;
+		//디버깅용
 
 	case 'u':
 		if (g_players[g_myid].result) {
@@ -1313,13 +1168,23 @@ void Keyboard(unsigned char key, int x, int y)
 			cout << "FALSE" << endl;
 		}
 		break;
-
 		//종료
+	case 'q': {
+		if (!g_want_bullet_reload) g_want_bullet_reload = true;
+		g_not_reloadbullet = false;
+		CS_RELOAD_PACKET* packet = new CS_RELOAD_PACKET;
+		packet->type = CS_RELOAD;
+		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_RELOAD_PACKET));
+		delete packet;
+	}
+		break;
 	case 'Q':
 		glutLeaveMainLoop();
 		break;
 
-
+	case 'h':
+		startgame = true;
+		break;
 	}
 
 	glutPostRedisplay();
@@ -1479,17 +1344,24 @@ void item_colliCHK() {
 
 void Mouse(int button, int state, int x, int y)
 {
+	//포탄 발사
+	if (g_setItem) {
+		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			if (g_bullet_reload_done || g_not_reloadbullet) {
+				if (g_players[g_myid].bullet_cnt > 0) {
+					PlaySound(TEXT("gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
+					CS_ATTACK_PACKET* packet = new CS_ATTACK_PACKET;
+					packet->tpye = CS_ATTACK;
+					packet->now_yaw = yaw;
+					packet->x = g_players[g_myid].x;
+					packet->z = g_players[g_myid].z;
+					packet->isshoot = true;
 
-	if (button == GLUT_LEFT_BUTTON)
-	{
-		if (state == GLUT_DOWN)
-		{
-			MH.left_button = true;
-		}
-		else
-		{
-			MH.left_button = false;
+					networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof CS_ATTACK_PACKET);
+					delete packet;
+				}
+			}
 		}
 	}
 
@@ -1502,57 +1374,52 @@ void Mouse(int button, int state, int x, int y)
 	glutPostRedisplay();
 }
 
-
-//마우스 좌표계 변환 함수
-void MouseChange(int x, int y) {
-
-	MH.mouse_x = 2 / (float)width * (float)x - 1;
-	MH.mouse_y = -2 / (float)height * (float)y + 1;
-
-}
-
-
 void Motion(int xpos, int ypos) {
 
-	MouseChange(xpos, ypos);
-	MH.left_button = true;
+	//convertDeviceXY2OpenglXY(x, y, &xpos, &ypos);
+	//convertDeviceXY2OpenglXY(lastx, lasty, &lastX, &lastY);
 
-	if (MH.left_button == true)
+	if (firstMouse)
 	{
-		if (MH.first_mouse_pos_flag) {
-			MH.first_mouse_pos_x = MH.mouse_x;
-			MH.first_mouse_pos_y = MH.mouse_y;
-
-			MH.first_mouse_pos_flag = false;
-		}
-
-		MH.delta_mouse_x = MH.mouse_x - MH.first_mouse_pos_x;
-		MH.delta_mouse_y = MH.mouse_y - MH.first_mouse_pos_y;
-
-		MH.drgree_x += MH.delta_mouse_x * MH.mouse_sensitivity;
-		MH.drgree_y += MH.delta_mouse_y * MH.mouse_sensitivity;
-
-		//if (MH.drgree_y > 89.0) {
-		//	MH.drgree_y = 89.0;
-		//}
-		//if (MH.drgree_y < -89.0) {
-		//	MH.drgree_y = -89.0;
-		//}
-		//
-		//if (MH.drgree_x > 89.0f)  MH.drgree_x = 89.0f;
-		//if (MH.drgree_x < -89.0f) MH.drgree_x = -89.0f;
-
-		CS_YAW_PACKET* packet = new CS_YAW_PACKET;
-		packet->type = CS_YAW;
-		packet->yaw = yaw;
-		packet->bodyYaw = MH.drgree_x;
-		networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_YAW_PACKET));
-		delete packet;
-
-		g_players[g_myid].bodyYaw = MH.drgree_x;
-		bodyYaw = MH.drgree_x;
-
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
 	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity = 0.5;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	//탱크 머리 움직임 서버로 보내기
+	yaw += xoffset;
+	CS_YAW_PACKET* packet = new CS_YAW_PACKET;
+	packet->type = CS_YAW;
+	packet->yaw = yaw;
+	networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof(CS_YAW_PACKET));
+	delete packet;
+
+	pitch += yoffset;
+
+	//limit 설정 
+	if (yaw > 89.0f)
+		yaw = 89.0f;
+	if (yaw < -89.0f)
+		yaw = -89.0f;
+
+	//카메라 뷰 360회전 
+	glm::vec3 front = glm::vec3(0.0, 0.0, -1.0);
+	front.x = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	//front.y = sin(glm::radians(pitch));*/
+	front.z = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+
+
+	cameraFront = glm::normalize(front);
 
 	glutPostRedisplay();
 }

@@ -69,12 +69,10 @@ struct CS_LOGIN_PACKET {
 
 struct CS_READY_PACKET {
 	char type;
-	char name[NAME_SIZE];
 };
 struct CS_MOVE_PACKET {
 	char type;
 	char direction;
-	float bodyYaw;
 };
 
 struct CS_ATTACK_PACKET {
@@ -119,10 +117,7 @@ struct CS_LOGOUT_PACKET {
 struct CS_YAW_PACKET {
 	char type;
 	float yaw;
-	float bodyYaw;
-
 };
-
 struct SC_LOGIN_INFO_PACKET {
 	char type;
 	int id;
@@ -146,8 +141,6 @@ struct SC_LOGIN_OK_PACKET {
 
 struct SC_READY_PACKET {
 	char type;
-	char name[NAME_SIZE];
-
 };
 struct SC_LOGINFAIL_PACKET {
 	char type;
@@ -200,10 +193,7 @@ struct SC_UPDATE_PACKET {
 	float speed;
 	short bullet_cnt;
 	float yaw;
-	float bodyYaw;
 	bool result;
-	bool gameend;
-
 };
 
 struct SC_SET_ITEM_PACKET {

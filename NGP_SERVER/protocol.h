@@ -73,7 +73,7 @@ struct CS_READY_PACKET {
 struct CS_MOVE_PACKET {
 	char type;
 	char direction;
-	float bodyYaw;
+	bool isfreeze;
 };
 
 struct CS_ATTACK_PACKET {
@@ -105,8 +105,6 @@ struct CS_LOGOUT_PACKET {
 struct CS_YAW_PACKET {
 	char type;
 	float yaw;
-	float bodyYaw;
-
 };
 
 struct CS_RELOAD_PACKET {
@@ -118,8 +116,6 @@ struct CS_HIT_PACKET {
 	int id;
 	int hp;
 	bool freeze_bullet;
-	bool result;
-
 };
 
 struct SC_LOGIN_INFO_PACKET {
@@ -192,7 +188,6 @@ struct SC_UPDATE_PACKET {
 	float speed;
 	short bullet_cnt;
 	float yaw;
-	float bodyYaw;
 	bool result;
 	bool gameend;
 };
