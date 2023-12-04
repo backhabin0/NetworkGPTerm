@@ -54,6 +54,7 @@ void Session::SetReadyPlayer(bool ready_player) { m_ready_player = ready_player;
 
 void Session::setYaw(float yaw) { m_yaw = yaw; }
 
+void Session::setBodyYaw(float bodyYaw) { m_bodyYaw = bodyYaw; }
 
 SOCKET Session::GetSocket() const { return m_socketinfo->client_socket; }
 
@@ -83,6 +84,8 @@ char* Session::GetName() const { return m_name; }
 bool Session::GetReadyPlayer() const { return m_ready_player; }
 
 float Session::GetYaw() const { return m_yaw; }
+
+float Session::GetBodyYaw() const { return m_bodyYaw; }
 
 //bool Session::collision_Chk(float aL, float aR, float aT, float aB, float bL, float bR, float bT, float bB)
 //{

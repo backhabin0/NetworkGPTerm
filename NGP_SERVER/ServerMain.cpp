@@ -491,6 +491,8 @@ DWORD WINAPI do_send(LPVOID lpParam)
 					scpacket->speed = g_players[i].GetSpeed();
 					scpacket->bullet_cnt = g_players[i].GetBulletCnt();
 					scpacket->yaw = g_players[i].GetYaw();
+					scpacket->bodyYaw = g_players[i].GetBodyYaw();
+
 				}
 				for (int i = 0; i < MAX_USER; ++i) {
 					std::lock_guard<std::mutex> lock(g_Sendmutex);
@@ -605,21 +607,31 @@ DWORD WINAPI ClientThread(LPVOID socket)
 			switch (cspacket->direction) {
 			case DIRECTION::UP: {
 				EnterCriticalSection(&g_clientThreadcs);
-				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + 0.3);
+				float tempx = g_players[socketinfo->id].GetSpeed() * sin(cspacket->bodyYaw * 3.14 / 180.0f);
+				float tempz = g_players[socketinfo->id].GetSpeed() * cos(cspacket->bodyYaw * 3.14 / 180.0f);
+
+				std::cout << cspacket->bodyYaw << std::endl;
+
+				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - tempx);
+				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - tempz);
+
+
 				//std::cout << socketinfo->id << "번 클라 w누를때 : " << g_players[socketinfo->id].GetZ() + 0.3 << std::endl;
 				tank_collid(g_players);
 				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "탱크끼리 충돌" << std::endl;
-					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - g_players[socketinfo->id].GetSpeed());
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + tempx);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + tempz);
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
 				}
 				if (g_players[socketinfo->id].GetWallCollision())
 				{
 					std::cout << "탱크-벽 충돌" << std::endl;
-					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - g_players[socketinfo->id].GetSpeed());
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + tempx);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + tempz);
 					g_players[socketinfo->id].SetWallCollision(false);
 
 				}
@@ -628,7 +640,13 @@ DWORD WINAPI ClientThread(LPVOID socket)
 							  break;
 			case DIRECTION::DOWN: {
 				EnterCriticalSection(&g_clientThreadcs);
-				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - g_players[socketinfo->id].GetSpeed());
+				float tempx = g_players[socketinfo->id].GetSpeed() * sin(cspacket->bodyYaw * 3.14 / 180.0f);
+				float tempz = g_players[socketinfo->id].GetSpeed() * cos(cspacket->bodyYaw * 3.14 / 180.0f);
+
+				std::cout << cspacket->bodyYaw << std::endl;
+
+				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + tempx);
+				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + tempz);
 				//std::cout << socketinfo->id << "번 클라 s누를때 : " << g_players[socketinfo->id].GetZ() - 0.3 << std::endl;
 				tank_collid(g_players);
 				
@@ -636,64 +654,84 @@ DWORD WINAPI ClientThread(LPVOID socket)
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "탱크끼리 충돌" << std::endl;
-					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + g_players[socketinfo->id].GetSpeed());
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - tempx);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - tempz);
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
 				}
 				if (g_players[socketinfo->id].GetWallCollision())
 				{
 					std::cout << "탱크-벽 충돌" << std::endl;
-					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + g_players[socketinfo->id].GetSpeed());
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - tempx);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - tempz);
 					g_players[socketinfo->id].SetWallCollision(false);
 
 				}
 				LeaveCriticalSection(&g_clientThreadcs);
 			}
 								break;
-			case DIRECTION::LEFT:
+			case DIRECTION::LEFT: {	
 				EnterCriticalSection(&g_clientThreadcs);
-				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + g_players[socketinfo->id].GetSpeed());
+				float tempx = g_players[socketinfo->id].GetSpeed() * sin(cspacket->bodyYaw * 3.14 / 180.0f + 3.14 / 2.0f);
+				float tempz = g_players[socketinfo->id].GetSpeed() * cos(cspacket->bodyYaw * 3.14 / 180.0f + 3.14 / 2.0f);
+
+				std::cout << cspacket->bodyYaw << std::endl;
+
+				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - tempx);
+				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - tempz);
+
 				//std::cout << socketinfo->id << "번 클라 a누를때 : " << g_players[socketinfo->id].GetX() + 0.3 << std::endl;
 				tank_collid(g_players);
 				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "탱크끼리 충돌" << std::endl;
-					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - g_players[socketinfo->id].GetSpeed());
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + tempx);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + tempz);
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
 				}
 				if (g_players[socketinfo->id].GetWallCollision())
 				{
 					std::cout << "탱크-벽 충돌" << std::endl;
-					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - g_players[socketinfo->id].GetSpeed());
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + tempx);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + tempz);
 					g_players[socketinfo->id].SetWallCollision(false);
 
 				}
 				LeaveCriticalSection(&g_clientThreadcs);
+			}
 				break;
-			case DIRECTION::RIGHT:
+			case DIRECTION::RIGHT: {
 				EnterCriticalSection(&g_clientThreadcs);
-				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - g_players[socketinfo->id].GetSpeed());
+				float tempx = g_players[socketinfo->id].GetSpeed() * sin(cspacket->bodyYaw * 3.14 / 180.0f + 3.14 / 2.0f);
+				float tempz = g_players[socketinfo->id].GetSpeed() * cos(cspacket->bodyYaw * 3.14 / 180.0f + 3.14 / 2.0f);
+
+				std::cout << cspacket->bodyYaw << std::endl;
+
+				g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + tempx);
+				g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() + tempz);
 				//std::cout << socketinfo->id << "번 클라 d누를때 : " << g_players[socketinfo->id].GetX() - 0.3 << std::endl;
 				tank_collid(g_players);
 				wall_collid(g_players, socketinfo->id);
 				if (g_players[socketinfo->id].GetCollision())
 				{
 					std::cout << "탱크끼리 충돌" << std::endl;
-					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + g_players[socketinfo->id].GetSpeed());
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - tempx);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - tempz);
 					g_players[0].SetCollision(false);
 					g_players[1].SetCollision(false);
 				}
 				if (g_players[socketinfo->id].GetWallCollision())
 				{
 					std::cout << "탱크-벽 충돌" << std::endl;
-					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() + g_players[socketinfo->id].GetSpeed());
+					g_players[socketinfo->id].SetX(g_players[socketinfo->id].GetX() - tempx);
+					g_players[socketinfo->id].SetZ(g_players[socketinfo->id].GetZ() - tempz);
 					g_players[socketinfo->id].SetWallCollision(false);
 
 				}
 				LeaveCriticalSection(&g_clientThreadcs);
-
+			}
 				break;
 			}
 		}
@@ -701,6 +739,8 @@ DWORD WINAPI ClientThread(LPVOID socket)
 		case CS_YAW: {
 			CS_YAW_PACKET* cspacket = reinterpret_cast<CS_YAW_PACKET*>(p);
 			g_players[socketinfo->id].setYaw(cspacket->yaw);
+			g_players[socketinfo->id].setBodyYaw(cspacket->bodyYaw);
+
 			//std::cout << "탱크 대가리 돈거 데이터 오냐?" << std::endl;
 			//std::cout << cspacket->yaw << std::endl;
 		}

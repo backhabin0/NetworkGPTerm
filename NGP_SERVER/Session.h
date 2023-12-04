@@ -27,6 +27,7 @@ private:
 	bool m_accept_player;	// 유저 수용 여부
 	bool m_ready_player=false;	// 
 	float m_yaw;
+	float m_bodyYaw;
 	bool m_collision; // 탱크충돌여부
 	bool m_wallCollision; // 탱크-벽 충돌여부
 	bool m_win; 
@@ -49,6 +50,7 @@ public:
 	void SetAcceptPlayer(bool accept_player);
 	void SetReadyPlayer(bool ready_player);
 	void setYaw(float yaw);
+	void setBodyYaw(float bodyYaw);
 	void SetCollision(bool collid) { m_collision = collid; }
 	void SetWallCollision(bool collid) { m_wallCollision = collid; }
 	void SetWin(bool result) { m_win = result; }
@@ -67,6 +69,7 @@ public:
 	bool GetAcceptPlayer() const;
 	bool GetReadyPlayer() const;
 	float GetYaw() const;
+	float GetBodyYaw() const;
 	bool GetCollision() const { return m_collision; }
 	bool GetWallCollision() const { return m_wallCollision; }
 	bool GetResult() const { return m_win; }
