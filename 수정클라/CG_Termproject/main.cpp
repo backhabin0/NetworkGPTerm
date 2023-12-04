@@ -1276,20 +1276,20 @@ void Keyboard(unsigned char key, int x, int y)
 	case VK_SPACE:
 	{
 		if (g_setItem) {
-			if (g_players[g_myid].bullet_cnt > 0) {
-				//sphere_[k].now_yaw = yaw;
-				//sphere_[k].launch = true;
-				PlaySound(TEXT("gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			if (g_bullet_reload_done || g_not_reloadbullet) {
+				if (g_players[g_myid].bullet_cnt > 0) {
+					PlaySound(TEXT("Sound/gun.wav"), NULL, SND_FILENAME | SND_ASYNC);
 
-				CS_ATTACK_PACKET* packet = new CS_ATTACK_PACKET;
-				packet->tpye = CS_ATTACK;
-				packet->now_yaw = yaw + bodyYaw;
-				packet->x = g_players[g_myid].x;
-				packet->z = g_players[g_myid].z;
-				packet->isshoot = true;
+					CS_ATTACK_PACKET* packet = new CS_ATTACK_PACKET;
+					packet->tpye = CS_ATTACK;
+					packet->now_yaw = yaw;
+					packet->x = g_players[g_myid].x;
+					packet->z = g_players[g_myid].z;
+					packet->isshoot = true;
 
-				networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof CS_ATTACK_PACKET);
-				delete packet;
+					networkmgr.SendPacket(reinterpret_cast<char*>(packet), sizeof CS_ATTACK_PACKET);
+					delete packet;
+				}
 			}
 		}
 	}
